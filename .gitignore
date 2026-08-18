@@ -25,6 +25,9 @@ Secrets/
 data/workspace/*.json
 data/workspace/*.jsonl
 data/workspace/*.tmp
+data/workspace/*.sqlite
+data/workspace/*.sqlite-*
+data/workspace/releases/
 !data/workspace/.gitkeep
 
 # Donor/reference archives are kept locally but not in git (large ZIPs exceed GitHub limits)
