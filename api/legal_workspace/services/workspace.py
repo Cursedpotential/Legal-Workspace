@@ -1,6 +1,6 @@
 """Disk-backed Matter workspace. Every mutation is written before return.
 
-> _Byline: Grok · grok-4.6 · 2026-08-18_
+> _Byline: Claude Code · Kimi K2.7 · 2026-08-18_
 """
 
 from __future__ import annotations
