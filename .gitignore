@@ -1,0 +1,32 @@
+# Byline: Grok · grok-4.6 · 2026-08-18
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+web/node_modules/
+web/.next/
+web/out/
+web/tsconfig.tsbuildinfo
+*.xxh3
+.DS_Store
+Thumbs.db
+Secrets/
+.claude/
+.cocoindex_code/
+data/workspace/*.json
+data/workspace/*.jsonl
+data/workspace/*.tmp
+!data/workspace/.gitkeep
+
+# Donor/reference archives are kept locally but not in git (large ZIPs exceed GitHub limits)
+docs/planning/original-context/**/*.zip
+docs/planning/original-context/donors/

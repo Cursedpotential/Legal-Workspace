@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "framework": "next-fastapi",
+  "notes": "Edit this file or PUT /v1/routing to remount chat/agents without rewriting Next or FastAPI. Overlay: data/workspace/routing.json. Env: LEGAL_WORKSPACE_ROUTING_FILE. Public identity is path + English label.",
+  "chat": {
+    "backend": "legal-api-agent-runs",
+    "next_path": "/api/chat",
+    "run_path": "/v1/agent-runs",
+    "confidential_path": "/v1/gateway:invoke",
+    "default_confidential_model": "ollama-cloud"
+  },
+  "agents": {
+    "intake": {
+      "backend": "legal-api",
+      "model": "unevaluated-manual",
+      "surface": "Issue tree"
+    },
+    "research": {
+      "backend": "legal-api",
+      "model": "unevaluated-manual",
+      "surface": "Research questions"
+    },
+    "element_mapper": {
+      "backend": "legal-api",
+      "model": "unevaluated-manual",
+      "surface": "Best-interest factors"
+    },
+    "drafter": {
+      "backend": "legal-api",
+      "model": "unevaluated-manual",
+      "surface": "Brief Builder"
+    },
+    "citation": {
+      "backend": "legal-api",
+      "model": "unevaluated-manual",
+      "surface": "Citations"
+    },
+    "redteam": {
+      "backend": "legal-api",
+      "model": "unevaluated-manual",
+      "surface": "Red team"
+    },
+    "discovery": {
+      "backend": "legal-api",
+      "model": "unevaluated-manual",
+      "surface": "Discovery"
+    },
+    "filing_checker": {
+      "backend": "legal-api",
+      "model": "unevaluated-manual",
+      "surface": "Filing checklist"
+    }
+  },
+  "role_keywords": {
+    "redteam": ["red team", "redteam", "opposing", "attack"],
+    "citation": ["cite", "citation", "authority"],
+    "discovery": ["discover", "interrogator", "rfp", "rfa"],
+    "filing_checker": ["file", "ready", "checklist"],
+    "element_mapper": ["factor", "element", "722.23"],
+    "drafter": ["draft", "motion", "brief"],
+    "research": ["research", "statute", "vodvarka"]
+  },
+  "surfaces": [
+    { "path": "/", "label": "Home", "group": "Assistant", "help": "Matter command center." },
+    { "path": "/chat", "label": "Paralegal", "group": "Assistant", "help": "F1. Workbench chat. Not a lawyer. Not something you file." },
+    { "path": "/prec", "label": "Precedent Search", "group": "Research", "help": "Search published opinions. CourtListener identity hits only — not a citator." },
+    { "path": "/stat", "label": "Statutes", "group": "Research", "help": "Michigan statutes and rules pinned for this matter." },
+    { "path": "/cite", "label": "Citations", "group": "Research", "help": "Validate and normalize citation structure. Does not Shepardize." },
+    { "path": "/rqst", "label": "Research questions", "group": "Research", "help": "Questions still open before you write or file." },
+    { "path": "/issue", "label": "Issue tree", "group": "Research", "help": "The legal question, broken into the pieces a judge has to decide." },
+    { "path": "/fctr", "label": "Best-interest factors", "group": "Research", "help": "MCL 722.23 (a)–(l)." },
+    { "path": "/ctrx", "label": "Contract Workbench", "group": "Contracts", "help": "Analyze, compare, and negotiate agreement language. Parenting-plan / order terms, not commercial NDAs." },
+    { "path": "/doc", "label": "Document Analyzer", "group": "Contracts", "help": "Owner-produced PDFs in this app. Not Agno evidence." },
+    { "path": "/priv", "label": "Privilege Check", "group": "Contracts", "help": "First-pass flags. Not a legal conclusion." },
+    { "path": "/drft", "label": "Brief Builder", "group": "Drafting", "help": "Write the motion. Nothing here is filed until you say so." },
+    { "path": "/tmpl", "label": "Motion outlines", "group": "Drafting", "help": "Starting structure for a paper you may later file." },
+    { "path": "/rvw", "label": "Owner review", "group": "Drafting", "help": "Mark what stays, what changes, and what is wrong." },
+    { "path": "/rels", "label": "Release candidate", "group": "Drafting", "help": "Frozen version you review before treating it as ready to file." },
+    { "path": "/file", "label": "Filing checklist", "group": "Drafting", "help": "What still has to be true before you walk a paper to the clerk. This screen does not file." },
+    { "path": "/jobs", "label": "Analysis Queue", "group": "Operations", "help": "Queued analysis jobs." },
+    { "path": "/wkfl", "label": "Workflows", "group": "Operations", "help": "Playbooks for recurring processes." },
+    { "path": "/autm", "label": "Automations", "group": "Operations", "help": "Scheduled jobs. Enable, last-run, run now." },
+    { "path": "/trig", "label": "Triggers", "group": "Operations", "help": "Inbound notices. Process or dismiss." },
+    { "path": "/audt", "label": "Audit Log", "group": "Operations", "help": "What this workspace recorded." },
+    { "path": "/live", "label": "Integrations", "group": "Operations", "help": "CourtListener, PACER-off, provider grid." },
+    { "path": "/cal", "label": "Docket Watch", "group": "Operations", "help": "This matter's hearings and deadlines. Confirm with the clerk." },
+    { "path": "/disc", "label": "Discovery", "group": "Operations", "help": "Interrogatories, RFPs, RFAs." },
+    { "path": "/exh", "label": "Exhibit list", "group": "Operations", "help": "Working list. Evidence truth stays in Agno." },
+    { "path": "/miss", "label": "Missing evidence", "group": "Operations", "help": "Ask Agno to look. This app does not copy the evidence store." },
+    { "path": "/todo", "label": "Tasks", "group": "Operations", "help": "Things only you can do." },
+    { "path": "/timl", "label": "Timeline", "group": "Operations", "help": "What happened, in order." },
+    { "path": "/agnt", "label": "Agent log", "group": "Operations", "help": "Routed agent traces." },
+    { "path": "/strat", "label": "Private strategy", "group": "Drafting", "help": "Notes to yourself. Not for the other parent, FOC, or the court.", "advanced": true },
+    { "path": "/team", "label": "Red team", "group": "Drafting", "help": "Attack your own draft. Does not send anything.", "advanced": true }
+  ]
+}
