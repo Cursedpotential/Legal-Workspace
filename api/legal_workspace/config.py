@@ -10,6 +10,8 @@ import re
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from legal_workspace.db.engine import default_sqlite_url
+
 _IP_RE = re.compile(r"(?:^|[\s/=])(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?")
 
 
@@ -27,9 +29,7 @@ class Settings(BaseSettings):
     display_timezone: str = Field(default="America/New_York")
     evidence_platform_base_url: str = Field(default="http://evidence-platform:8000")
     model_gateway_base_url: str = Field(default="http://model-gateway:4000")
-    database_url: str = Field(
-        default="postgresql://legal_os_app:change-me@legal-postgres:5432/ai"
-    )
+    database_url: str = Field(default_factory=default_sqlite_url)
     invoke_models: bool = Field(default=False, alias="LEGAL_WORKSPACE_INVOKE_MODELS")
 
     @field_validator(

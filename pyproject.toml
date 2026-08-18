@@ -16,6 +16,8 @@ dependencies = [
   "pikepdf>=9,<10",
   "python-multipart>=0.0.20",
   "pypdf>=5,<7",
+  "sqlalchemy>=2.0,<2.1",
+  "psycopg[binary]>=3.3,<3.4",
 ]
 
 [project.optional-dependencies]

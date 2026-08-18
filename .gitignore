@@ -22,6 +22,7 @@ Thumbs.db
 Secrets/
 .claude/
 .cocoindex_code/
+.memsearch/
 data/workspace/*.json
 data/workspace/*.jsonl
 data/workspace/*.tmp

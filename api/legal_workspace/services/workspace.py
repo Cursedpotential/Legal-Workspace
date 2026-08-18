@@ -90,6 +90,7 @@ from legal_workspace.services.persist import (
 )
 from legal_workspace.services import sqlite_store
 from legal_workspace.config import get_settings
+from legal_workspace.db.store import WorkspaceStore, create_tables, to_uuid
 from legal_workspace.services.agno_client import list_matters, verify_package_hashes
 from legal_workspace.domain.provider_grid import confidential_blocked_reason
 from legal_workspace.services.gateway import GatewayResult, invoke_chat
@@ -194,13 +195,26 @@ class Workspace:
         self.store_dir = Path(store_dir) if store_dir is not None else default_store_dir()
         self.state_path = self.store_dir / "state.json"
         self.events_path = self.store_dir / "events.jsonl"
-        sqlite_store.connect(self.store_dir).close()
-        if read_json(self.state_path) is None:
-            self._write(_blank_state(), action="init")
-        elif self.store_dir.resolve() == default_store_dir().resolve():
+        self._store_dir_str = str(self.store_dir)
+        create_tables(store_dir=self._store_dir_str)
+
+        # Determine the matter identity for this workspace.
+        legacy = read_json(self.state_path)
+        if legacy is not None and isinstance(legacy, dict):
+            self._matter_id = to_uuid(legacy.get("matter", {}).get("matter_id"))
+        else:
+            self._matter_id = _blank_state().matter.matter_id
+
+        # Backwards compatibility: migrate existing JSON state to SQLite once.
+        if legacy is not None and self.store_dir.resolve() == default_store_dir().resolve():
             self._reconcile_real_data()
+        elif WorkspaceStore.load(self._matter_id, store_dir=self._store_dir_str) is None:
+            blank = _blank_state()
+            self._matter_id = blank.matter.matter_id
+            self._write(blank, action="init")
 
     def _write(self, state: WorkspaceState, action: str) -> None:
+        # SQLite is the source of truth; JSON files are kept for debug/backup only.
         payload = state.model_dump(mode="json")
         atomic_write_json(self.state_path, payload)
         append_jsonl(
@@ -224,6 +238,7 @@ class Workspace:
                 "investigation_count": len(state.investigations),
             },
         )
+        WorkspaceStore.save(payload, action, store_dir=self._store_dir_str)
 
     def _reconcile_real_data(self) -> None:
         """Drop incomplete/test rows. Keep complete applicable authorities."""
@@ -263,9 +278,13 @@ class Workspace:
             self._write(state, action="reconcile-real-data")
 
     def load(self) -> WorkspaceState:
-        raw = read_json(self.state_path)
+        # Prefer SQLite; fall back to legacy JSON for one migration pass.
+        raw = WorkspaceStore.load(self._matter_id, store_dir=self._store_dir_str)
+        if raw is None:
+            raw = read_json(self.state_path)
         if raw is None:
             state = _blank_state()
+            self._matter_id = state.matter.matter_id
             self._write(state, action="init-missing")
             return self._overlay_sql_settings(state)
         return self._overlay_sql_settings(WorkspaceState.model_validate(raw))
