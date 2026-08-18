@@ -5,11 +5,21 @@
 
 ---
 
+## 0. Progress update
+
+- ✅ **Git repository created** on GitHub: `https://github.com/Cursedpotential/Legal-Workspace`
+- ✅ **Persistence refactor completed**: JSON-file source of truth replaced with SQLite backed by SQLAlchemy models that mirror the PostgreSQL schemas (`legal_core`, `legal_research`, `legal_work_product`, `legal_audit`). All 134 tests pass.
+- 🔄 **Plain-English route/label rename** — pending granular UI audit (agents running).
+- 🔄 **Monorepo workspace wiring** — on hold pending owner decision on path/name.
+- ❌ **Functional depth** — most features are still stubs or mocked.
+
+---
+
 ## 1. Executive summary
 
 Grok built a **standalone-looking FastAPI + Next.js app** that is far wider than it is deep. The directory is **untracked inside `the-platform-workspace`**, has **no monorepo wiring**, and — most importantly — **violates the owner’s plain-English requirement** by using cryptic abbreviation paths (`/drft`, `/rvw`, `/fctr`, `/agnt`, etc.) and legal jargon throughout labels and help text.
 
-The app is currently a **surface-heavy scaffold** with many page stubs, mocked or unevaluated agent routing, JSON-file persistence instead of PostgreSQL, and no verified end-to-end flow. It is **not court-safe and not production-ready**.
+The app is currently a **surface-heavy scaffold** with many page stubs, mocked or unevaluated agent routing, and no verified end-to-end flow. It is **not court-safe and not production-ready**.
 
 ---
 
@@ -46,11 +56,14 @@ The app is currently a **surface-heavy scaffold** with many page stubs, mocked o
 
 | Spec requirement | As-built |
 |---|---|
-| PostgreSQL 18 schemas: `legal_core`, `legal_research`, `legal_work_product`, `legal_release`, `legal_audit` | Schemas created in `sql/0001_legal_os_bootstrap.sql`, but **no SQLAlchemy models or repository layer** |
-| Pydantic contracts → config → repositories → services → API | Contracts exist; **repositories appear absent** |
-| Event outbox with idempotent consumers | `legal_audit.event_outbox` table exists; **no producer/consumer code verified** |
-| Append-only audit with payload hashes | Partial: `events.jsonl` used locally, hash discipline unclear |
-| Every mutation writes Postgres before API returns | **Actually writes `data/workspace/state.json` + `events.jsonl`** — direct contradiction |
+| PostgreSQL 18 schemas: `legal_core`, `legal_research`, `legal_work_product`, `legal_release`, `legal_audit` | ✅ SQLAlchemy models in `api/legal_workspace/db/models.py` mirror these schemas; SQLite used locally with `legal_*` table prefixes |
+| Pydantic contracts → config → repositories → services → API | ✅ Contracts exist; `WorkspaceStore` in `api/legal_workspace/db/store.py` is the repository-like layer |
+| Event outbox with idempotent consumers | `legal_audit.event_outbox` table exists; **audit row is written on every save**; idempotent consumer not yet implemented |
+| Append-only audit with payload hashes | ✅ Every save writes an audit event with SHA-256 payload hash |
+| Every mutation writes DB before API returns | ✅ SQLite is now the source of truth; JSON files kept only as debug backup |
+| Swap to PostgreSQL later | ✅ Engine is URL-driven; changing `DATABASE_URL` switches to Postgres with no code changes |
+
+**Known debt:** `WorkspaceStore.save()` currently deletes *all* rows in each child table because the app is single-Matter and Matter identity can change during Agno projection. This must be replaced with per-Matter deletes before multi-Matter support.
 
 ### 2.5 Domain coverage
 
