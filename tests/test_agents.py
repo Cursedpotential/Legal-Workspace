@@ -59,4 +59,4 @@ def test_http_agent_runs(tmp_path) -> None:
     assert len(listed.json()) == 1
     home = client.get("/v1/matter")
     assert home.json()["agent_run_count"] == 1
-    assert any(row["path"] == "/agnt" and row["label"] == "Agent log" for row in home.json()["next_surfaces"])
+    assert any(row["path"] == "/assistant-log" and row["label"] == "Assistant activity log" for row in home.json()["next_surfaces"])

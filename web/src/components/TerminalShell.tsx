@@ -113,7 +113,7 @@ function Sidebar({
         <span className="sidebar-brand-mark">LW</span>
         <div>
           <div className="sidebar-brand">Legal Workspace</div>
-          <div className="sidebar-brand-subtitle">Genesee · 7th Circuit</div>
+          <div className="sidebar-brand-subtitle">Genesee County custody case</div>
         </div>
       </div>
       <CasePhaseSwitcher phase={phase} onChange={onPhaseChange} />
@@ -143,7 +143,7 @@ function Sidebar({
       </nav>
       <div className="sidebar-version">
         <ConfidentialToggle />
-        <div>Workbench only — do not file this screen.</div>
+        <div>Planning tool only — not a court filing.</div>
       </div>
     </aside>
   );
@@ -339,7 +339,7 @@ function StatusBar({
   return (
     <div className="status-bar">
       <span style={{ color: apiOk ? "var(--status-ok)" : "var(--status-err)" }}>
-        {apiOk ? "●" : "○"} legal-api
+        {apiOk ? "●" : "○"} workspace backend
       </span>
       <span>│</span>
       <span style={{ color: evidenceOk ? "var(--status-ok)" : "var(--status-err)" }}>
@@ -389,7 +389,7 @@ export function TerminalShell({ children }: { children: ReactNode }) {
     [embedded, pathname],
   );
 
-  const chatPinned = Boolean(pinnedPath?.split("?")[0] === "/chat");
+  const chatPinned = Boolean(pinnedPath?.split("?")[0] === "/assistant");
 
   const tellChatSurface = useCallback((surface: string) => {
     if (typeof window === "undefined") return;
@@ -416,14 +416,14 @@ export function TerminalShell({ children }: { children: ReactNode }) {
       postSplitToParent("toggle");
       return;
     }
-    if (pathname === "/chat") return;
+    if (pathname === "/assistant") return;
     if (chatPinned) {
       persistPin(null);
       closeSplit();
       return;
     }
     tellChatSurface(pathname);
-    const next = `/chat?from=${encodeURIComponent(pathname)}`;
+    const next = `/assistant?from=${encodeURIComponent(pathname)}`;
     if (!isSafePinPath(next)) return;
     persistPin(next);
     setPinnedPath(next);
@@ -452,7 +452,7 @@ export function TerminalShell({ children }: { children: ReactNode }) {
   }, [embedded, pinReady, pinnedPath]);
 
   useEffect(() => {
-    if (embedded || !chatPinned || pathname === "/chat") return;
+    if (embedded || !chatPinned || pathname === "/assistant") return;
     tellChatSurface(pathname);
   }, [chatPinned, embedded, pathname, tellChatSurface]);
 
@@ -511,7 +511,7 @@ export function TerminalShell({ children }: { children: ReactNode }) {
   const header = (
     <div className="module-header">
       <span className="module-title">{navLabel(current)}</span>
-      <span className="module-subtitle">Workbench only — do not file this screen with the court.</span>
+      <span className="module-subtitle">Planning tool only — not a court filing with the court.</span>
       {!embedded ? (
         <>
           <span style={{ flex: 1 }} />

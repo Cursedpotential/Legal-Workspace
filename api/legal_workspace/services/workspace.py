@@ -308,11 +308,11 @@ class Workspace:
                 "releases": len(state.releases),
                 "package_items": len(state.package.items) if state.package else 0,
             }
-        elif key == "/fctr":
+        elif key == "/custody-factors":
             pack["background"] = (
                 "Both-parent rule — assistant only, not a screen dump. "
-                "Address petitioner and respondent. Conduct, not diagnoses. "
-                "Do not invent facts. Not a finding. Weighting is the owner's."
+                "Address each parent. Conduct, not diagnoses. "
+                "Do not invent facts. Not a finding. Weighting is yours."
             )
             pack["saved"] = [
                 {
@@ -325,40 +325,40 @@ class Workspace:
                 }
                 for item in state.factors
             ]
-        elif key == "/issue":
+        elif key == "/questions":
             pack["saved"] = {
                 "title": state.issue.title,
                 "authority": state.issue.governing_authority,
                 "elements": [row.label for row in state.issue.elements],
             }
-        elif key in {"/drft", "/tmpl", "/rvw", "/rels"}:
+        elif key in {"/drafts", "/templates", "/review", "/final-copy"}:
             pack["saved"] = [
                 {"heading": item.heading, "body": item.body[:800]} for item in state.drafts[:8]
             ]
-        elif key == "/todo":
+        elif key == "/tasks":
             pack["saved"] = [
                 {"title": item.title, "status": item.status.value} for item in state.todos[:20]
             ]
-        elif key in {"/cal", "/timl"}:
+        elif key in {"/calendar", "/timeline"}:
             pack["saved"] = [
                 {"title": item.title, "occurs_at": item.occurs_at.isoformat()}
                 for item in state.docket_events[:20]
             ]
-        elif key in {"/auth", "/stat"}:
+        elif key == "/laws":
             pack["saved"] = [
                 {"identifier": item.identifier, "proposition": item.proposition[:200]}
                 for item in state.authorities[:20]
             ]
-        elif key == "/prec":
-            pack["saved"] = {"note": "Precedent Search is CourtListener identity hits only. Not a citator."}
-        elif key == "/cite":
-            pack["saved"] = {"note": "Citations parse structure only. eyecite does not Shepardize."}
-        elif key == "/rqst":
+        elif key == "/case-search":
+            pack["saved"] = {"note": "Case search is CourtListener identity hits only. It does not check whether a case is still good law."}
+        elif key == "/citation-check":
+            pack["saved"] = {"note": "Citation check parses structure only. It does not verify whether a case is still valid."}
+        elif key == "/open-questions":
             pack["saved"] = [
                 {"question": item.question, "status": item.status.value}
                 for item in state.research_questions[:20]
             ]
-        elif key == "/priv":
+        elif key == "/confidentiality-check":
             pack["saved"] = {"note": "Privilege scan is a first-pass. Not a legal conclusion."}
         else:
             pack["saved"] = {"note": "No extra saved snapshot for this page."}
@@ -596,7 +596,7 @@ class Workspace:
                 effective_model="not-invoked",
                 target_type=created.target_type,
                 target_id=created.target_id,
-                output=f"Blocked: agents cannot {blocked}. Owner must use Owner review / Filing checklist.",
+                output=f"Blocked: agents cannot {blocked}. Owner must use Your review / Filing readiness checklist.",
                 status=AgentRunStatus.BLOCKED,
             )
         else:
@@ -1122,7 +1122,7 @@ class Workspace:
         export_dir = self.store_dir / "releases"
         atomic_write_json(export_dir / f"{manifest.release_id}.json", manifest.model_dump(mode="json"))
         body = [
-            f"# Release candidate {manifest.release_id}",
+            f"# Final review copy {manifest.release_id}",
             "",
             f"content_hash: {manifest.content_hash}",
             f"package_id: {manifest.package_id}",

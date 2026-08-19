@@ -28,7 +28,7 @@ export function WorkSheet({
   fields: SheetField[];
   rows: SheetRow[];
   createPath: string;
-  updatePath?: (row: SheetRow) => string;
+  updatePath?: string;
   createExtras?: Record<string, string>;
   addLabel: string;
 }) {
@@ -69,9 +69,14 @@ export function WorkSheet({
     void send("POST", createPath, { ...createExtras, ...draft }).then(() => setDraft(blank));
   }
 
+  function pathFor(row: SheetRow) {
+    if (!updatePath) return "";
+    return updatePath.replace("{id}", row.id ?? "");
+  }
+
   function saveEdit() {
     if (!editing || !updatePath) return;
-    void send("PUT", updatePath(editing), editing).then(() => setEditing(null));
+    void send("PUT", pathFor(editing), editing).then(() => setEditing(null));
   }
 
   return (
@@ -86,7 +91,7 @@ export function WorkSheet({
         </thead>
         <tbody>
           {rows.map((row, index) => {
-            const active = editing && updatePath && updatePath(editing) === updatePath(row);
+            const active = editing && updatePath && pathFor(editing) === pathFor(row);
             return (
               <tr
                 key={row.id ?? String(index)}

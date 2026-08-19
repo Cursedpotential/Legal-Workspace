@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { legalApiBase } from "@/lib/api/client";
 
-// Byline: Grok · grok-4.6 · 2026-08-18
-// Citations: validate / normalize / verify-integrity. eyecite is structure only.
+// Byline: Claude Code · Kimi K2.7 · 2026-08-18
+// Citation check: format check / clean up / snapshot check. eyecite is structure only.
 
 type Parsed = {
   raw: string;
@@ -22,9 +22,9 @@ type Parsed = {
 type Tab = "validate" | "normalize" | "verify";
 
 const TABS: Array<{ id: Tab; label: string }> = [
-  { id: "validate", label: "Validate" },
-  { id: "normalize", label: "Normalize" },
-  { id: "verify", label: "Verify integrity" },
+  { id: "validate", label: "Check format" },
+  { id: "normalize", label: "Clean up" },
+  { id: "verify", label: "Snapshot check" },
 ];
 
 export function CitationParse() {
@@ -88,7 +88,7 @@ export function CitationParse() {
         style={{ display: "grid", gap: 8, margin: "12px 0" }}
       >
         <label>
-          Citation text
+          Paste the citation
           <textarea
             value={text}
             onChange={(event) => setText(event.target.value)}
@@ -97,23 +97,23 @@ export function CitationParse() {
           />
         </label>
         <button type="submit" disabled={busy || !text.trim()}>
-          {busy ? "Reading…" : "Read citation"}
+          {busy ? "Checking…" : "Check citation"}
         </button>
       </form>
       {error ? <p className="unsupported">{error}</p> : null}
       {tab === "validate" ? (
         <p className="muted">
-          Valid here means the parser recognized a reporter and page. It is not
+          Format check means the parser recognized a reporter and page. It is not
           a holding check.
         </p>
       ) : null}
       {tab === "normalize" ? (
-        <p className="muted">Normalized string is the cleaned citation text only.</p>
+        <p className="muted">Cleaned-up citation text only.</p>
       ) : null}
       {tab === "verify" ? (
         <p className="muted">
-          Verify integrity is a snapshot + currentness pin. This is not
-          Shepardizing. CourtListener is not a citator.
+          Snapshot check records a hash + date so you can spot tampering later. This is not
+          a check of whether the case is still valid law.
         </p>
       ) : null}
       {rows.map((row) => (
@@ -125,7 +125,7 @@ export function CitationParse() {
             {row.court ? ` · ${row.court}` : ""}
           </p>
           <p className="muted">
-            recognized={String(row.validated)} · citator={String(row.is_citator_verified)}
+            recognized={String(row.validated)} · valid-law-check={String(row.is_citator_verified)}
           </p>
         </article>
       ))}

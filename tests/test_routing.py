@@ -44,7 +44,7 @@ def test_overlay_file_changes_which_agent_is_called(tmp_path, monkeypatch) -> No
         AgentRunCreate(intent="research Vodvarka lookback", prompt="outline only")
     )
     assert run.role is AgentRole.DRAFTER
-    assert "Brief Builder" in run.output
+    assert "Motion writer" in run.output
 
 
 def test_mapping_edit_retargets_dispatch_and_keeps_forbidden_blocked(
@@ -53,7 +53,7 @@ def test_mapping_edit_retargets_dispatch_and_keeps_forbidden_blocked(
     """Edit a page path and intent→role; file/approve/serve stay blocked."""
     table = load_routing()
     table.surfaces = [
-        item if item.label != "Filing checklist" else item.model_copy(update={"path": "/rels"})
+        item if item.label != "Filing readiness checklist" else item.model_copy(update={"path": "/final-copy"})
         for item in table.surfaces
     ]
     table.role_keywords = {
@@ -69,10 +69,10 @@ def test_mapping_edit_retargets_dispatch_and_keeps_forbidden_blocked(
 
     from legal_workspace.services.routing import path_for_query
 
-    assert path_for_query("Filing checklist") == "/rels"
-    resolved = client.get("/v1/routing/resolve", params={"q": "Filing checklist"})
+    assert path_for_query("Filing readiness checklist") == "/final-copy"
+    resolved = client.get("/v1/routing/resolve", params={"q": "Filing readiness checklist"})
     assert resolved.status_code == 200
-    assert resolved.json()["path"] == "/rels"
+    assert resolved.json()["path"] == "/final-copy"
 
     remapped = client.post(
         "/v1/agent-runs",
@@ -103,7 +103,7 @@ def test_http_get_and_put_routing(tmp_path, monkeypatch) -> None:
     body = listed.json()
     assert body["chat"]["run_path"] == "/v1/agent-runs"
     assert "mnemonics" not in body
-    assert any(item["label"] == "Agent log" and item["path"] == "/agnt" for item in body["surfaces"])
+    assert any(item["label"] == "Assistant activity log" and item["path"] == "/assistant-log" for item in body["surfaces"])
     assert all("cmd" not in item for item in body["surfaces"])
     body["chat"]["backend"] = "python-only"
     body["agents"]["research"]["model"] = "ollama-cloud"

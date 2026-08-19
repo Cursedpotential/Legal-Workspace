@@ -49,5 +49,5 @@ def test_http_templates(tmp_path) -> None:
     missing = client.post("/v1/templates:instantiate", json={"template_id": "not-a-template"})
     assert missing.status_code == 404
     home = client.get("/v1/matter")
-    assert any(row["path"] == "/tmpl" and row["label"] == "Motion outlines" for row in home.json()["next_surfaces"])
+    assert any(row["path"] == "/templates" and row["label"] == "Starting templates" for row in home.json()["next_surfaces"])
     assert home.json()["draft_count"] == 1

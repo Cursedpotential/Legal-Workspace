@@ -1,4 +1,4 @@
-"""Discovery persists and cannot be marked served without a date.
+"""Evidence requests persists and cannot be marked served without a date.
 
 > _Byline: Grok · grok-4.6 · 2026-08-18_
 """
@@ -34,7 +34,7 @@ def test_served_requires_date(tmp_path) -> None:
             kind=DiscoveryKind.RFA,
             text="Admit that no written specific-terms schedule currently exists.",
             purpose="Narrow the specific-terms request.",
-            linked_issue="Best-interest factors (a)–(l) considered individually",
+            linked_issue="What the judge must consider (a)–(l) considered individually",
         )
     )
     try:
@@ -66,7 +66,7 @@ def test_http_discovery(tmp_path) -> None:
             "kind": "rfp",
             "text": "Produce school attendance records for the last semester.",
             "purpose": "Factor (b)/(h) only if those records become an issue.",
-            "linked_issue": "Best-interest factors (a)–(l) considered individually",
+            "linked_issue": "What the judge must consider (a)–(l) considered individually",
             "missing_proof": "No school records in an approved package.",
         },
     )
@@ -78,5 +78,5 @@ def test_http_discovery(tmp_path) -> None:
     )
     assert blocked.status_code == 409
     home = client.get("/v1/matter")
-    assert any(row["path"] == "/disc" and row["label"] == "Discovery" for row in home.json()["next_surfaces"])
+    assert any(row["path"] == "/evidence-requests" and row["label"] == "Evidence requests" for row in home.json()["next_surfaces"])
     assert home.json()["discovery_count"] >= 3

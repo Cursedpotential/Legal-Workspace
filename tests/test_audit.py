@@ -1,4 +1,4 @@
-"""Audit Log and Triggers read the same event file. English names.
+"""Activity log and Inbound notices read the same event file. English names.
 
 > _Byline: Grok · grok-4.6 · 2026-08-18_
 """
@@ -30,5 +30,5 @@ def test_audit_and_triggers_are_lists(tmp_path) -> None:
     )
     assert all("cmd" not in item for item in home.json()["next_surfaces"])
     labels = [item["label"] for item in home.json()["next_surfaces"]]
-    assert "Precedent Search" in labels
-    assert "Brief Builder" in labels
+    assert "Case search" in labels
+    assert "Motion writer" in labels

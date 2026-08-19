@@ -71,8 +71,8 @@ def test_http_docket(tmp_path) -> None:
     assert home.json()["upcoming_event_count"] == 1
     paths = {row["path"] for row in home.json()["next_surfaces"]}
     labels = {row["label"] for row in home.json()["next_surfaces"]}
-    assert "/cal" in paths and "Docket Watch" in labels
-    assert "/timl" in paths and "Timeline" in labels
+    assert "/calendar" in paths and "Court dates" in labels
+    assert "/timeline" in paths and "Timeline" in labels
     assert home.json()["upcoming_events"]
     event_id = created.json()["event_id"]
     removed = client.delete(f"/v1/docket-events/{event_id}")

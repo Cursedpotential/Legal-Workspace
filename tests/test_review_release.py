@@ -1,4 +1,4 @@
-"""Owner review and deterministic release candidates persist.
+"""Your review and deterministic release candidates persist.
 
 > _Byline: Grok · grok-4.6 · 2026-08-18_
 """
@@ -82,7 +82,7 @@ def test_owner_review_persists_and_agent_cannot_approve(tmp_path) -> None:
         ReviewCreate(
             section_id=section.section_id,
             verdict=ReviewVerdict.APPROVE,
-            rationale="Citations resolve to the imported package.",
+            rationale="Citation check resolve to the imported package.",
         )
     )
     assert decision.reviewer == "owner"
@@ -169,14 +169,14 @@ def test_http_review_and_release(tmp_path) -> None:
         json={
             "section_id": str(section.section_id),
             "verdict": "approve",
-            "rationale": "Owner reviewed citations.",
+            "rationale": "Your reviewed citations.",
             "reviewer": "owner",
         },
     )
     assert reviewed.status_code == 200, reviewed.text
     home = client.get("/v1/matter")
     assert home.json()["review_count"] == 1
-    assert any(row["path"] == "/rvw" and row["label"] == "Owner review" for row in home.json()["next_surfaces"])
+    assert any(row["path"] == "/review" and row["label"] == "Your review" for row in home.json()["next_surfaces"])
 
     released = client.post(
         "/v1/releases",

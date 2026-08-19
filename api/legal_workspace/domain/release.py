@@ -1,7 +1,7 @@
 """Deterministic release-candidate manifests.
 
 > _Byline: Grok · grok-4.6 · 2026-08-18_
-A candidate is not a filing. Private strategy, red-team runs, prompts,
+A candidate is not a filing. My private notes, red-team runs, prompts,
 and unapproved drafts never enter the payload. The content hash is
 sha256 of the sorted canonical JSON — same inputs, same hash.
 """

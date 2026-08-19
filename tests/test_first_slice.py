@@ -127,10 +127,10 @@ def test_http_first_slice_on_shipped_app(tmp_path) -> None:
     assert body["factor_count"] == 12
     paths = {row["path"] for row in body["next_surfaces"]}
     labels = {row["label"] for row in body["next_surfaces"]}
-    assert "/fctr" in paths
-    assert "/rvw" in paths
-    assert "Best-interest factors" in labels
-    assert "Owner review" in labels
+    assert "/custody-factors" in paths
+    assert "/review" in paths
+    assert "What the judge must consider" in labels
+    assert "Your review" in labels
     assert all("cmd" not in row for row in body["next_surfaces"])
     assert body["upcoming_event_count"] == 0
     assert body["judge_confirmed"] is False

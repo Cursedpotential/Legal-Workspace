@@ -82,7 +82,7 @@ export async function POST(request: Request) {
       background = "";
     }
   }
-  if (!background && path.startsWith("/fctr")) {
+  if (!background && path.startsWith("/custody-factors")) {
     background =
       "Both-parent rule — assistant only. Address petitioner and respondent. Conduct, not diagnoses. Do not invent facts. Not a finding. Weighting is the owner's.";
   }

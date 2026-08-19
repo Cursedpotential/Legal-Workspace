@@ -1,4 +1,4 @@
-"""Operations HTTP: Audit Log and Triggers. Same events file. English labels.
+"""Operations HTTP: Activity log and Inbound notices. Same events file. English labels.
 
 > _Byline: Grok · grok-4.6 · 2026-08-18_
 """

@@ -1,4 +1,4 @@
-"""Owner review decisions. Agents cannot approve or release.
+"""Your review decisions. Agents cannot approve or release.
 
 > _Byline: Grok · grok-4.6 · 2026-08-18_
 Approval records a human verdict against a content hash. It does not

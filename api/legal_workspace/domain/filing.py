@@ -90,15 +90,15 @@ def evaluate_filing_readiness(
         ),
         FilingCheck(
             check_id="review",
-            label="Owner review approved a draft",
+            label="Your review approved a draft",
             state=CheckState.PASS if review_approved else CheckState.FAIL,
             reason="No owner approval on the current draft hash." if not review_approved else "Owner approval recorded.",
         ),
         FilingCheck(
             check_id="release",
-            label="Release candidate + manifest exist",
+            label="Final review copy + manifest exist",
             state=CheckState.PASS if release_count else CheckState.FAIL,
-            reason="Build a RELS candidate first." if not release_count else f"{release_count} candidate(s).",
+            reason="Build a final-copy candidate first." if not release_count else f"{release_count} candidate(s).",
         ),
         FilingCheck(
             check_id="not-filed",
@@ -124,7 +124,7 @@ def evaluate_filing_readiness(
             check_id="redactions",
             label="Redactions / confidential handling",
             state=CheckState.UNKNOWN,
-            reason="Owner review of minors' identifiers and nonpublic content.",
+            reason="Your review of minors' identifiers and nonpublic content.",
             human=True,
         ),
         FilingCheck(

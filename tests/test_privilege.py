@@ -116,4 +116,4 @@ def test_http_scan_text_and_section(tmp_path) -> None:
     assert "child_identifying" in section_body["kinds_hit"]
 
     home = client.get("/v1/matter")
-    assert any(row["path"] == "/priv" and row["label"] == "Privilege Check" for row in home.json()["next_surfaces"])
+    assert any(row["path"] == "/confidentiality-check" and row["label"] == "Confidentiality check" for row in home.json()["next_surfaces"])

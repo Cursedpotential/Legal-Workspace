@@ -1,5 +1,6 @@
-// Byline: Grok · grok-4.6 · 2026-08-18
+// Byline: Claude Code · Kimi K2.7 · 2026-08-18
 // Catalog matches Cat 2 / legal-terminal groups: Assistant, Research, Contracts, Drafting, Operations.
+// All paths and labels are plain English — no legal abbreviations or jargon.
 
 export type Surface = {
   path: string;
@@ -18,55 +19,55 @@ export type CasePhase = (typeof CASE_PHASES)[number];
 
 export const PHASE_COPY: Record<CasePhase, { label: string; help: string }> = {
   Discovery: {
-    label: "Discovery",
-    help: "Discovery, missing evidence, exhibits, research questions.",
+    label: "Information gathering",
+    help: "Evidence requests, missing evidence, evidence list, open questions.",
   },
   Motions: {
-    label: "Motions",
-    help: "Brief Builder, review, release candidate, filing checklist.",
+    label: "Written requests to the court",
+    help: "Motion writer, your review, final review copy, filing readiness checklist.",
   },
   Hearing: {
-    label: "Hearing Prep",
-    help: "Docket Watch, timeline, filing checklist.",
+    label: "Hearing prep",
+    help: "Court dates, timeline, filing readiness checklist.",
   },
   Trial: {
-    label: "Trial",
-    help: "Exhibits, factors, Brief Builder.",
+    label: "Trial prep",
+    help: "Evidence list, custody factors, motion writer.",
   },
 };
 
 export const SURFACES: Surface[] = [
-  { path: "/", label: "Home", group: "Assistant", help: "Matter command center.", icon: "home" },
-  { path: "/chat", label: "Paralegal", group: "Assistant", help: "F1. Workbench chat. Not a lawyer.", icon: "message" },
-  { path: "/prec", label: "Precedent Search", group: "Research", help: "Search published opinions. Not a citator.", icon: "search" },
-  { path: "/stat", label: "Statutes", group: "Research", help: "Michigan statutes and rules pinned for this matter.", icon: "book" },
-  { path: "/cite", label: "Citations", group: "Research", help: "Validate citation structure. Does not Shepardize.", icon: "quote" },
-  { path: "/rqst", label: "Research questions", group: "Research", help: "Questions still open before you write or file.", icon: "search" },
-  { path: "/issue", label: "Issue tree", group: "Research", help: "The legal question, broken into pieces a judge decides.", icon: "scale" },
-  { path: "/fctr", label: "Best-interest factors", group: "Research", help: "MCL 722.23 (a)–(l).", icon: "list" },
-  { path: "/ctrx", label: "Contract Workbench", group: "Contracts", help: "Analyze, compare, negotiate agreement language.", icon: "file" },
-  { path: "/doc", label: "Document Analyzer", group: "Contracts", help: "Owner-produced PDFs. Not Agno evidence.", icon: "file" },
-  { path: "/priv", label: "Privilege Check", group: "Contracts", help: "First-pass flags. Not a legal conclusion.", icon: "shield" },
-  { path: "/drft", label: "Brief Builder", group: "Drafting", help: "Write the motion. Nothing here is filed until you say so.", icon: "pen" },
-  { path: "/tmpl", label: "Motion outlines", group: "Drafting", help: "Starting structure for a paper you may later file.", icon: "file" },
-  { path: "/rvw", label: "Owner review", group: "Drafting", help: "Mark what stays, what changes, and what is wrong.", icon: "eye" },
-  { path: "/rels", label: "Release candidate", group: "Drafting", help: "Frozen version before treating it as ready to file.", icon: "package" },
-  { path: "/file", label: "Filing checklist", group: "Drafting", help: "This screen does not file.", icon: "clipboard" },
-  { path: "/jobs", label: "Analysis Queue", group: "Operations", help: "Queued analysis jobs.", icon: "clock" },
-  { path: "/wkfl", label: "Workflows", group: "Operations", help: "Playbooks for recurring processes.", icon: "activity" },
-  { path: "/autm", label: "Automations", group: "Operations", help: "Scheduled jobs.", icon: "activity" },
-  { path: "/trig", label: "Triggers", group: "Operations", help: "Inbound notices.", icon: "mail" },
-  { path: "/audt", label: "Audit Log", group: "Operations", help: "What this workspace recorded.", icon: "list" },
-  { path: "/live", label: "Integrations", group: "Operations", help: "CourtListener, PACER-off, provider grid.", icon: "activity" },
-  { path: "/cal", label: "Docket Watch", group: "Operations", help: "This matter's hearings and deadlines.", icon: "calendar" },
-  { path: "/disc", label: "Discovery", group: "Operations", help: "Interrogatories, RFPs, RFAs.", icon: "folder" },
-  { path: "/exh", label: "Exhibit list", group: "Operations", help: "Working list. Evidence truth stays in Agno.", icon: "paperclip" },
-  { path: "/miss", label: "Missing evidence", group: "Operations", help: "Ask Agno to look.", icon: "help" },
-  { path: "/todo", label: "Tasks", group: "Operations", help: "Things only you can do.", icon: "check" },
-  { path: "/timl", label: "Timeline", group: "Operations", help: "What happened, in order.", icon: "clock" },
-  { path: "/agnt", label: "Agent log", group: "Operations", help: "Routed agent traces.", icon: "activity" },
-  { path: "/strat", label: "Private strategy", group: "Drafting", help: "Notes to yourself.", advanced: true, icon: "lock" },
-  { path: "/team", label: "Red team", group: "Drafting", help: "Attack your own draft.", advanced: true, icon: "swords" },
+  { path: "/", label: "Case dashboard", group: "Assistant", help: "Overview of your case.", icon: "home" },
+  { path: "/assistant", label: "Ask the assistant", group: "Assistant", help: "Ask the assistant. This is not legal advice and is not filed with the court.", icon: "message" },
+  { path: "/case-search", label: "Case search", group: "Research", help: "Search published court decisions. This does not check whether a case is still good law.", icon: "search" },
+  { path: "/laws", label: "Laws", group: "Research", help: "Michigan laws that matter for this case.", icon: "book" },
+  { path: "/citation-check", label: "Citation check", group: "Research", help: "Check that a citation is formatted correctly. This does not verify whether the case is still valid.", icon: "quote" },
+  { path: "/open-questions", label: "Open questions", group: "Research", help: "Questions that need answers before you write or file anything.", icon: "search" },
+  { path: "/questions", label: "Questions the judge decides", group: "Research", help: "The legal question, broken into pieces a judge decides.", icon: "scale" },
+  { path: "/custody-factors", label: "What the judge must consider", group: "Research", help: "The 12 things Michigan law says the judge must weigh.", icon: "list" },
+  { path: "/agreements", label: "Agreement review", group: "Contracts", help: "Review, compare, and mark up agreement language.", icon: "file" },
+  { path: "/documents", label: "Document viewer", group: "Contracts", help: "Open a PDF you produced. This does not open evidence from the evidence store.", icon: "file" },
+  { path: "/confidentiality-check", label: "Confidentiality check", group: "Contracts", help: "First-pass scan for words that might be private or protected. This is not a legal decision.", icon: "shield" },
+  { path: "/drafts", label: "Motion writer", group: "Drafting", help: "Write the paper you may later file. Nothing here is filed until you say so.", icon: "pen" },
+  { path: "/templates", label: "Starting templates", group: "Drafting", help: "Starting structure for a paper you may later file.", icon: "file" },
+  { path: "/review", label: "Your review", group: "Drafting", help: "Mark what stays, what changes, and what is wrong.", icon: "eye" },
+  { path: "/final-copy", label: "Final review copy", group: "Drafting", help: "A frozen copy to review before you treat it as ready to file.", icon: "package" },
+  { path: "/filing-checklist", label: "Filing readiness checklist", group: "Drafting", help: "What still has to be true before you walk a paper to the clerk. This screen does not file.", icon: "clipboard" },
+  { path: "/analysis-queue", label: "Analysis queue", group: "Operations", help: "Queued analysis jobs.", icon: "clock" },
+  { path: "/playbooks", label: "Playbooks", group: "Operations", help: "Playbooks for recurring processes.", icon: "activity" },
+  { path: "/scheduled-jobs", label: "Scheduled jobs", group: "Operations", help: "Scheduled jobs. Enable, see last run, or run now.", icon: "activity" },
+  { path: "/notices", label: "Inbound notices", group: "Operations", help: "Notices this workspace has received.", icon: "mail" },
+  { path: "/activity-log", label: "Activity log", group: "Operations", help: "What this workspace recorded.", icon: "list" },
+  { path: "/external-sources", label: "External sources", group: "Operations", help: "External sources such as court record search.", icon: "activity" },
+  { path: "/calendar", label: "Court dates", group: "Operations", help: "Hearings and deadlines for this case. Confirm with the clerk.", icon: "calendar" },
+  { path: "/evidence-requests", label: "Evidence requests", group: "Operations", help: "Written questions and document requests.", icon: "folder" },
+  { path: "/evidence", label: "Evidence list", group: "Operations", help: "Working list of items you might show the court.", icon: "paperclip" },
+  { path: "/missing-evidence", label: "Missing evidence", group: "Operations", help: "Track evidence you still need.", icon: "help" },
+  { path: "/tasks", label: "Your tasks", group: "Operations", help: "Things only you can do.", icon: "check" },
+  { path: "/timeline", label: "Timeline", group: "Operations", help: "What happened, in order.", icon: "clock" },
+  { path: "/assistant-log", label: "Assistant activity log", group: "Operations", help: "Records of what the assistant was asked to do.", icon: "activity" },
+  { path: "/private-notes", label: "My private notes", group: "Drafting", help: "Notes to yourself. Not for the other parent, FOC, or the court.", advanced: true, icon: "lock" },
+  { path: "/challenge-draft", label: "Devil's advocate review", group: "Drafting", help: "Find weaknesses in your draft before the other side does.", advanced: true, icon: "swords" },
 ];
 
 export function navLabel(item: Surface): string {
@@ -122,10 +123,10 @@ export function surfaceForPath(pathname: string, rows: Surface[] = catalog): Sur
 }
 
 export const PHASE_PRIORITY: Record<CasePhase, readonly string[]> = {
-  Discovery: ["/disc", "/miss", "/exh", "/rqst"],
-  Motions: ["/drft", "/rvw", "/rels", "/file", "/fctr"],
-  Hearing: ["/cal", "/timl", "/file", "/agnt"],
-  Trial: ["/exh", "/fctr", "/drft"],
+  Discovery: ["/evidence-requests", "/missing-evidence", "/evidence", "/open-questions"],
+  Motions: ["/drafts", "/review", "/final-copy", "/filing-checklist", "/custody-factors"],
+  Hearing: ["/calendar", "/timeline", "/filing-checklist", "/assistant-log"],
+  Trial: ["/evidence", "/custody-factors", "/drafts"],
 };
 
 export function isCasePhase(value: string | null | undefined): value is CasePhase {

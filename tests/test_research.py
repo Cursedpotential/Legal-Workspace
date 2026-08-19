@@ -1,4 +1,4 @@
-"""Research questions persist. Currency flags stale cited drafts.
+"""Open questions persist. Currency flags stale cited drafts.
 
 > _Byline: Grok · grok-4.6 · 2026-08-18_
 """
@@ -59,7 +59,7 @@ def test_http_research_and_home_count(tmp_path) -> None:
     home = client.get("/v1/matter")
     assert home.status_code == 200
     assert home.json()["open_research_count"] >= 1
-    assert any(row["path"] == "/rqst" and row["label"] == "Research questions" for row in home.json()["next_surfaces"])
+    assert any(row["path"] == "/open-questions" and row["label"] == "Open questions" for row in home.json()["next_surfaces"])
     created = client.post(
         "/v1/research",
         json={

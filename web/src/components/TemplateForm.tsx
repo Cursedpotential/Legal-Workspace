@@ -24,7 +24,7 @@ export function TemplateForm({
         body: JSON.stringify({ template_id: templateId }),
       });
       if (!response.ok) throw new Error(`template ${response.status}`);
-      router.push("/drft");
+      router.push("/drafts");
       router.refresh();
     } catch (exc) {
       setError(exc instanceof Error ? exc.message : "instantiate failed");

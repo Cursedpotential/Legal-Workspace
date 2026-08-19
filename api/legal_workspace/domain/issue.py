@@ -53,7 +53,7 @@ def default_custody_modification_issue() -> LegalIssue:
         elements=[
             IssueElement(label="Proper cause or change of circumstances (if a final order exists)"),
             IssueElement(label="Established custodial environment and resulting burden"),
-            IssueElement(label="Best-interest factors (a)–(l) considered individually"),
+            IssueElement(label="What the judge must consider (a)–(l) considered individually"),
         ],
         children=[
             LegalIssue(

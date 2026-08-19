@@ -70,7 +70,7 @@ def catalog() -> list[DraftingTemplate]:
                 "Caption / case number: [clerk-confirm]",
                 "Proper cause or change of circumstances since the last custody order (date: [unknown]).",
                 "Established custodial environment and resulting burden.",
-                "Best-interest factors (a)–(l), each parent, conduct-first.",
+                "What the judge must consider (a)–(l), each parent, conduct-first.",
                 "Requested relief: narrow, specific, enforceable.",
                 "Verification / notice / proposed order.",
             ],

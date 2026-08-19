@@ -17,7 +17,7 @@ export function ReleaseForm({
   const [busy, setBusy] = useState(false);
 
   if (sections.length === 0) {
-    return <p>Approve a draft in RVW before building a release candidate.</p>;
+    return <p>Approve a draft in Your review before building a final review copy.</p>;
   }
 
   async function submit() {
@@ -70,7 +70,7 @@ export function ReleaseForm({
       ))}
       {error ? <p style={{ color: "#c9a227" }}>{error}</p> : null}
       <button type="submit" disabled={busy || selected.length === 0}>
-        {busy ? "Building…" : "Build release candidate"}
+        {busy ? "Building…" : "Build final review copy"}
       </button>
     </form>
   );

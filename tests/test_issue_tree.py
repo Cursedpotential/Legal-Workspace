@@ -1,4 +1,4 @@
-"""Issue tree + both-parent factor analysis.
+"""Questions the judge decides + both-parent factor analysis.
 
 > _Byline: Grok · grok-4.6 · 2026-08-18_
 """

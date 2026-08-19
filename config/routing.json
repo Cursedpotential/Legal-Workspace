@@ -4,7 +4,7 @@
   "notes": "Edit this file or PUT /v1/routing to remount chat/agents without rewriting Next or FastAPI. Overlay: data/workspace/routing.json. Env: LEGAL_WORKSPACE_ROUTING_FILE. Public identity is path + English label.",
   "chat": {
     "backend": "legal-api-agent-runs",
-    "next_path": "/api/chat",
+    "next_path": "/api/assistant",
     "run_path": "/v1/agent-runs",
     "confidential_path": "/v1/gateway:invoke",
     "default_confidential_model": "ollama-cloud"
@@ -13,84 +13,84 @@
     "intake": {
       "backend": "legal-api",
       "model": "unevaluated-manual",
-      "surface": "Issue tree"
+      "surface": "Questions the judge decides"
     },
     "research": {
       "backend": "legal-api",
       "model": "unevaluated-manual",
-      "surface": "Research questions"
+      "surface": "Open questions"
     },
     "element_mapper": {
       "backend": "legal-api",
       "model": "unevaluated-manual",
-      "surface": "Best-interest factors"
+      "surface": "What the judge must consider"
     },
     "drafter": {
       "backend": "legal-api",
       "model": "unevaluated-manual",
-      "surface": "Brief Builder"
+      "surface": "Motion writer"
     },
     "citation": {
       "backend": "legal-api",
       "model": "unevaluated-manual",
-      "surface": "Citations"
+      "surface": "Citation check"
     },
     "redteam": {
       "backend": "legal-api",
       "model": "unevaluated-manual",
-      "surface": "Red team"
+      "surface": "Devil's advocate review"
     },
     "discovery": {
       "backend": "legal-api",
       "model": "unevaluated-manual",
-      "surface": "Discovery"
+      "surface": "Evidence requests"
     },
     "filing_checker": {
       "backend": "legal-api",
       "model": "unevaluated-manual",
-      "surface": "Filing checklist"
+      "surface": "Filing readiness checklist"
     }
   },
   "role_keywords": {
-    "redteam": ["red team", "redteam", "opposing", "attack"],
+    "redteam": ["red team", "redteam", "opposing", "attack", "challenge draft"],
     "citation": ["cite", "citation", "authority"],
-    "discovery": ["discover", "interrogator", "rfp", "rfa"],
+    "discovery": ["discover", "interrogator", "evidence request", "document request"],
     "filing_checker": ["file", "ready", "checklist"],
-    "element_mapper": ["factor", "element", "722.23"],
+    "element_mapper": ["factor", "element", "custody factor", "722.23"],
     "drafter": ["draft", "motion", "brief"],
-    "research": ["research", "statute", "vodvarka"]
+    "research": ["research", "statute", "vodvarka", "law"]
   },
   "surfaces": [
-    { "path": "/", "label": "Home", "group": "Assistant", "help": "Matter command center." },
-    { "path": "/chat", "label": "Paralegal", "group": "Assistant", "help": "F1. Workbench chat. Not a lawyer. Not something you file." },
-    { "path": "/prec", "label": "Precedent Search", "group": "Research", "help": "Search published opinions. CourtListener identity hits only — not a citator." },
-    { "path": "/stat", "label": "Statutes", "group": "Research", "help": "Michigan statutes and rules pinned for this matter." },
-    { "path": "/cite", "label": "Citations", "group": "Research", "help": "Validate and normalize citation structure. Does not Shepardize." },
-    { "path": "/rqst", "label": "Research questions", "group": "Research", "help": "Questions still open before you write or file." },
-    { "path": "/issue", "label": "Issue tree", "group": "Research", "help": "The legal question, broken into the pieces a judge has to decide." },
-    { "path": "/fctr", "label": "Best-interest factors", "group": "Research", "help": "MCL 722.23 (a)–(l)." },
-    { "path": "/ctrx", "label": "Contract Workbench", "group": "Contracts", "help": "Analyze, compare, and negotiate agreement language. Parenting-plan / order terms, not commercial NDAs." },
-    { "path": "/doc", "label": "Document Analyzer", "group": "Contracts", "help": "Owner-produced PDFs in this app. Not Agno evidence." },
-    { "path": "/priv", "label": "Privilege Check", "group": "Contracts", "help": "First-pass flags. Not a legal conclusion." },
-    { "path": "/drft", "label": "Brief Builder", "group": "Drafting", "help": "Write the motion. Nothing here is filed until you say so." },
-    { "path": "/tmpl", "label": "Motion outlines", "group": "Drafting", "help": "Starting structure for a paper you may later file." },
-    { "path": "/rvw", "label": "Owner review", "group": "Drafting", "help": "Mark what stays, what changes, and what is wrong." },
-    { "path": "/rels", "label": "Release candidate", "group": "Drafting", "help": "Frozen version you review before treating it as ready to file." },
-    { "path": "/file", "label": "Filing checklist", "group": "Drafting", "help": "What still has to be true before you walk a paper to the clerk. This screen does not file." },
-    { "path": "/jobs", "label": "Analysis Queue", "group": "Operations", "help": "Queued analysis jobs." },
-    { "path": "/wkfl", "label": "Workflows", "group": "Operations", "help": "Playbooks for recurring processes." },
-    { "path": "/autm", "label": "Automations", "group": "Operations", "help": "Scheduled jobs. Enable, last-run, run now." },
-    { "path": "/trig", "label": "Triggers", "group": "Operations", "help": "Inbound notices. Process or dismiss." },
-    { "path": "/audt", "label": "Audit Log", "group": "Operations", "help": "What this workspace recorded." },
-    { "path": "/live", "label": "Integrations", "group": "Operations", "help": "CourtListener, PACER-off, provider grid." },
-    { "path": "/cal", "label": "Docket Watch", "group": "Operations", "help": "This matter's hearings and deadlines. Confirm with the clerk." },
-    { "path": "/disc", "label": "Discovery", "group": "Operations", "help": "Interrogatories, RFPs, RFAs." },
-    { "path": "/exh", "label": "Exhibit list", "group": "Operations", "help": "Working list. Evidence truth stays in Agno." },
-    { "path": "/miss", "label": "Missing evidence", "group": "Operations", "help": "Ask Agno to look. This app does not copy the evidence store." },
-    { "path": "/todo", "label": "Tasks", "group": "Operations", "help": "Things only you can do." },
-    { "path": "/timl", "label": "Timeline", "group": "Operations", "help": "What happened, in order." },
-    { "path": "/agnt", "label": "Agent log", "group": "Operations", "help": "Routed agent traces." },
-    { "path": "/strat", "label": "Private strategy", "group": "Drafting", "help": "Notes to yourself. Not for the other parent, FOC, or the court.", "advanced": true },
-    { "path": "/team", "label": "Red team", "group": "Drafting", "help": "Attack your own draft. Does not send anything.", "advanced": true }
+    { "path": "/", "label": "Case dashboard", "group": "Assistant", "help": "Overview of your case." },
+    { "path": "/assistant", "label": "Ask the assistant", "group": "Assistant", "help": "Ask the assistant. This is not legal advice and is not filed with the court." },
+    { "path": "/case-search", "label": "Case search", "group": "Research", "help": "Search published court decisions. This does not check whether a case is still good law." },
+    { "path": "/laws", "label": "Laws", "group": "Research", "help": "Michigan laws that matter for this case." },
+    { "path": "/citation-check", "label": "Citation check", "group": "Research", "help": "Check that a citation is formatted correctly. This does not verify whether the case is still valid." },
+    { "path": "/open-questions", "label": "Open questions", "group": "Research", "help": "Questions that need answers before you write or file anything." },
+    { "path": "/questions", "label": "Questions the judge decides", "group": "Research", "help": "The legal question, broken into pieces a judge decides." },
+    { "path": "/custody-factors", "label": "What the judge must consider", "group": "Research", "help": "The 12 things Michigan law says the judge must weigh." },
+    { "path": "/agreements", "label": "Agreement review", "group": "Contracts", "help": "Review, compare, and mark up agreement language. Parenting-plan / order terms, not commercial NDAs." },
+    { "path": "/documents", "label": "Document viewer", "group": "Contracts", "help": "Open a PDF you produced. This does not open evidence from the evidence store." },
+    { "path": "/confidentiality-check", "label": "Confidentiality check", "group": "Contracts", "help": "First-pass scan for words that might be private or protected. This is not a legal decision." },
+    { "path": "/drafts", "label": "Motion writer", "group": "Drafting", "help": "Write the paper you may later file. Nothing here is filed until you say so." },
+    { "path": "/templates", "label": "Starting templates", "group": "Drafting", "help": "Starting structure for a paper you may later file." },
+    { "path": "/review", "label": "Your review", "group": "Drafting", "help": "Mark what stays, what changes, and what is wrong." },
+    { "path": "/final-copy", "label": "Final review copy", "group": "Drafting", "help": "A frozen copy to review before you treat it as ready to file." },
+    { "path": "/filing-checklist", "label": "Filing readiness checklist", "group": "Drafting", "help": "What still has to be true before you walk a paper to the clerk. This screen does not file." },
+    { "path": "/analysis-queue", "label": "Analysis queue", "group": "Operations", "help": "Queued analysis jobs." },
+    { "path": "/playbooks", "label": "Playbooks", "group": "Operations", "help": "Playbooks for recurring processes." },
+    { "path": "/scheduled-jobs", "label": "Scheduled jobs", "group": "Operations", "help": "Scheduled jobs. Enable, last-run, run now." },
+    { "path": "/notices", "label": "Inbound notices", "group": "Operations", "help": "Notices this workspace has received." },
+    { "path": "/activity-log", "label": "Activity log", "group": "Operations", "help": "What this workspace recorded." },
+    { "path": "/external-sources", "label": "External sources", "group": "Operations", "help": "External sources such as court record search." },
+    { "path": "/calendar", "label": "Court dates", "group": "Operations", "help": "Hearings and deadlines for this case. Confirm with the clerk." },
+    { "path": "/evidence-requests", "label": "Evidence requests", "group": "Operations", "help": "Written questions and document requests." },
+    { "path": "/evidence", "label": "Evidence list", "group": "Operations", "help": "Working list of items you might show the court." },
+    { "path": "/missing-evidence", "label": "Missing evidence", "group": "Operations", "help": "Track evidence you still need." },
+    { "path": "/tasks", "label": "Your tasks", "group": "Operations", "help": "Things only you can do." },
+    { "path": "/timeline", "label": "Timeline", "group": "Operations", "help": "What happened, in order." },
+    { "path": "/assistant-log", "label": "Assistant activity log", "group": "Operations", "help": "Records of what the assistant was asked to do." },
+    { "path": "/private-notes", "label": "My private notes", "group": "Drafting", "help": "Notes to yourself. Not for the other parent, FOC, or the court.", "advanced": true },
+    { "path": "/challenge-draft", "label": "Devil's advocate review", "group": "Drafting", "help": "Find weaknesses in your draft before the other side does.", "advanced": true }
   ]
 }

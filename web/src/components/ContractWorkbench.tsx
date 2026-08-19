@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 
 // Byline: Grok · grok-4.6 · 2026-08-18
-// Contract Workbench: analyze / compare / negotiate. Parenting-plan terms, not NDAs.
+// Agreement review: analyze / compare / negotiate. Parenting-plan terms, not NDAs.
 
 type Draft = {
   section_id: string;
@@ -29,7 +29,7 @@ export function ContractWorkbench({ drafts }: { drafts: Draft[] }) {
   );
 
   if (!drafts.length) {
-    return <p className="muted">No agreement drafts yet. Open Brief Builder or Document Analyzer first.</p>;
+    return <p className="muted">No agreement drafts yet. Open Motion writer or Document viewer first.</p>;
   }
 
   return (

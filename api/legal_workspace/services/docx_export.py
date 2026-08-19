@@ -19,7 +19,7 @@ def write_release_docx(
     sections: list[object],
 ) -> Path:
     document = Document()
-    document.add_heading("Release candidate", level=1)
+    document.add_heading("Final review copy", level=1)
     document.add_paragraph("This is not a filing and not court-safe.")
     document.add_paragraph(f"content_hash: {manifest.content_hash}")
     document.add_paragraph(f"package_id: {manifest.package_id}")

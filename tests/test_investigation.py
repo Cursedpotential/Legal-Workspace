@@ -76,7 +76,7 @@ def test_http_investigations(tmp_path) -> None:
             "needed": "School attendance records for the current semester.",
             "why": "Factor (h) has no accepted package spans yet.",
             "kind": "missing_proof",
-            "linked_issue": "Best-interest factors (a)–(l) considered individually",
+            "linked_issue": "What the judge must consider (a)–(l) considered individually",
             "factor_letter": "h",
         },
     )
@@ -88,7 +88,7 @@ def test_http_investigations(tmp_path) -> None:
     assert body["factor_letter"] == "h"
     home = client.get("/v1/matter")
     assert home.status_code == 200
-    assert any(row["path"] == "/miss" and row["label"] == "Missing evidence" for row in home.json()["next_surfaces"])
+    assert any(row["path"] == "/missing-evidence" and row["label"] == "Missing evidence" for row in home.json()["next_surfaces"])
     assert home.json()["investigation_count"] == 1
     assert home.json()["upcoming_event_count"] == 0
     relisted = client.get("/v1/investigations")

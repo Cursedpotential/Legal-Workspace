@@ -19,11 +19,11 @@ export function PdfPane() {
   return (
     <>
       <p className="section-eyebrow">Contracts</p>
-      <h1>Document Analyzer</h1>
+      <h1>Document viewer</h1>
       <p className="dim">
         Open a PDF you produced. Ask / F1 and Chrome DevTools can see this page.
-        This is not Agno evidence and not Collabora. LibreOffice conversion stays
-        the later sidecar.
+        This is not from the evidence store. In-browser editing and conversion are
+        not available yet.
       </p>
       <label>
         Choose a PDF

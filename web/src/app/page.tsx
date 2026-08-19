@@ -3,10 +3,10 @@ import { EventList, type AuditEvent } from "@/components/EventList";
 import { fetchMatter, legalApiBase } from "@/lib/api/client";
 
 const HOME_GROUPS: Array<{ title: string; paths: string[] }> = [
-  { title: "Research", paths: ["/prec", "/stat", "/cite"] },
-  { title: "Contracts", paths: ["/ctrx", "/doc"] },
-  { title: "Privilege", paths: ["/priv"] },
-  { title: "Operations", paths: ["/jobs", "/wkfl", "/autm", "/trig", "/audt", "/live"] },
+  { title: "Research", paths: ["/case-search", "/laws", "/citation-check"] },
+  { title: "Contracts", paths: ["/agreements", "/documents"] },
+  { title: "Privilege", paths: ["/confidentiality-check"] },
+  { title: "Operations", paths: ["/analysis-queue", "/playbooks", "/scheduled-jobs", "/notices", "/activity-log", "/external-sources"] },
 ];
 
 export default async function MatterHomePage() {
@@ -29,7 +29,7 @@ export default async function MatterHomePage() {
 
   return (
     <>
-      <div className="section-eyebrow">Home</div>
+      <div className="section-eyebrow">Case dashboard</div>
       <h1 className="legal">
         {matter?.matter.display_name ?? "Genesee County custody matter"}
       </h1>
@@ -45,12 +45,12 @@ export default async function MatterHomePage() {
             {matter.court_case.court ? ` · ${matter.court_case.court}` : ""}
           </p>
           <p className="muted">
-            Judge: {matter.judge_confirmed ? "confirmed" : "not clerk-confirmed"} ·
-            FOC: {matter.foc_confirmed ? "confirmed" : "not clerk-confirmed"}
+            Judge: {matter.judge_confirmed ? "confirmed by the clerk" : "not confirmed by the clerk"} ·
+            Family-court office: {matter.foc_confirmed ? "confirmed" : "not confirmed"}
           </p>
           <p>
-            <a className="quick-action" href="/chat" title="F1. Workbench chat. Not a lawyer.">
-              Ask the Paralegal
+            <a className="quick-action" href="/assistant" title="Ask the assistant. This is not legal advice and is not filed with the court.">
+              Ask the assistant
             </a>
           </p>
           <div className="metric-row">
@@ -67,7 +67,7 @@ export default async function MatterHomePage() {
               <span className="metric-value">{matter.exhibit_count}</span>
             </div>
             <div className="metric-tile">
-              <span className="metric-label">Audit Log</span>
+              <span className="metric-label">Activity log</span>
               <span className="metric-value">{matter.audit_count ?? 0}</span>
             </div>
           </div>
@@ -95,11 +95,11 @@ export default async function MatterHomePage() {
             <EventList events={recent} />
           </div>
           <div className="surface-card">
-            <div className="section-eyebrow">Issue tree</div>
+            <div className="section-eyebrow">Questions the judge decides</div>
             <h2>{matter.issue.title}</h2>
             <p className="muted">{matter.issue.governing_authority}</p>
             <p>
-              <a href="/issue">Issue tree</a>
+              <a href="/questions">Questions the judge decides</a>
             </p>
           </div>
         </>

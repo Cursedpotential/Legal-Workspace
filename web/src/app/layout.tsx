@@ -11,7 +11,7 @@ import "./globals.css";
 
 export const metadata = {
   title: "Legal Workspace",
-  description: "Matter command center for the Genesee custody case.",
+  description: "Overview of your case for the Genesee custody case.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

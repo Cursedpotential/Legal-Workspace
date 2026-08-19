@@ -58,7 +58,7 @@ def structural_todos() -> list[CaseTodo]:
         ),
         CaseTodo(
             title="Red-team each theory from opposing-counsel and missing-proof lenses before promoting a draft",
-            detail="Private strategy only. Red-team output is not a finding.",
+            detail="My private notes only. Red-team output is not a finding.",
             source="build-guide:adversarial-reviewer",
         ),
     ]

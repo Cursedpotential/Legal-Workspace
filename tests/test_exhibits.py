@@ -143,7 +143,7 @@ def test_http_exhibits(tmp_path) -> None:
     )
     assert blocked.status_code == 409
     home = client.get("/v1/matter")
-    assert any(row["path"] == "/exh" and row["label"] == "Exhibit list" for row in home.json()["next_surfaces"])
+    assert any(row["path"] == "/evidence" and row["label"] == "Evidence list" for row in home.json()["next_surfaces"])
     assert home.json()["exhibit_count"] == 1
 
 

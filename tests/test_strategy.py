@@ -1,4 +1,4 @@
-"""Private strategy store persists and is never court-safe.
+"""My private notes store persists and is never court-safe.
 
 > _Byline: Grok · grok-4.6 · 2026-08-18_
 """

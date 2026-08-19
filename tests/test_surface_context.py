@@ -12,7 +12,7 @@ def test_surface_context_home_and_factors(tmp_path) -> None:
     assert home["path"] == "/"
     assert "matter" in home
     assert isinstance(home["saved"], dict)
-    factors = store.surface_context("/fctr")
+    factors = store.surface_context("/custody-factors")
     assert isinstance(factors["saved"], list)
     assert factors["saved"]
     assert "letter" in factors["saved"][0]

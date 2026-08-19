@@ -62,7 +62,7 @@ def test_http_filing_readiness(tmp_path) -> None:
     body = response.json()
     assert body["ready"] is False
     assert body["filed"] is False
-    assert any(row["path"] == "/file" and row["label"] == "Filing checklist" for row in client.get("/v1/matter").json()["next_surfaces"])
+    assert any(row["path"] == "/filing-checklist" and row["label"] == "Filing readiness checklist" for row in client.get("/v1/matter").json()["next_surfaces"])
     blocked = client.post(
         "/v1/filing-overrides",
         json={"check_id": "fee", "state": "pass", "note": "no", "reviewer": "agent"},
