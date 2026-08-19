@@ -581,6 +581,13 @@ class WorkspaceStore:
         assert matter_id is not None
 
         with db_session(store_dir=store_dir) as session:
+            # Snapshot the stored matter before we upsert. Single-case workspace, so
+            # there is at most one matter row in this DB file.
+            stored_matter_id = session.execute(
+                select(models.LegalCoreMatterRef.matter_id)
+            ).scalar_one_or_none()
+            delete_scope = stored_matter_id if stored_matter_id is not None else matter_id
+
             # Upsert matter
             matter = session.get(models.LegalCoreMatterRef, matter_id)
             issue_tree = state_dict.get("issue")
@@ -685,9 +692,9 @@ class WorkspaceStore:
             # Commit metadata first so deletes/inserts are not in the same flush.
             session.commit()
 
-            # Wipe and rewrite child rows. The app is currently single-Matter, so we
-            # delete the entire contents of each child table to avoid unique-key races
-            # when the Matter identity is projected from Agno.
+            # Delete child rows tied to the stored matter_id. If the matter_id
+            # changed during Agno projection, this removes the old rows before the
+            # new ones are inserted.
             for model in (
                 models.LegalWorkProductDraftSection,
                 models.LegalWorkProductStrategyNote,
@@ -705,11 +712,34 @@ class WorkspaceStore:
                 models.LegalResearchCurrencyFlag,
                 models.LegalResearchQuestion,
             ):
-                session.execute(model.__table__.delete())
+                session.execute(
+                    model.__table__.delete().where(model.matter_id == delete_scope)
+                )
 
-            # Work product
-            session.execute(models.LegalWorkProductWorkProductVersion.__table__.delete())
-            session.execute(models.LegalWorkProductWorkProduct.__table__.delete())
+            # Work product version has no matter_id column; remove versions whose
+            # parent work product belongs to the stored matter, then remove the products.
+            wp_subquery = select(models.LegalWorkProductWorkProduct.work_product_id).where(
+                models.LegalWorkProductWorkProduct.matter_id == delete_scope
+            )
+            session.execute(
+                models.LegalWorkProductWorkProductVersion.__table__.delete().where(
+                    models.LegalWorkProductWorkProductVersion.work_product_id.in_(wp_subquery)
+                )
+            )
+            session.execute(
+                models.LegalWorkProductWorkProduct.__table__.delete().where(
+                    models.LegalWorkProductWorkProduct.matter_id == delete_scope
+                )
+            )
+
+            # If the matter_id changed, drop the old matter row (its court case goes
+            # via cascade). The new matter and court case were upserted above.
+            if stored_matter_id is not None and stored_matter_id != matter_id:
+                session.execute(
+                    models.LegalCoreMatterRef.__table__.delete().where(
+                        models.LegalCoreMatterRef.matter_id == stored_matter_id
+                    )
+                )
 
             # Commit deletes in a separate transaction so SQLite unique constraints
             # see the deletes as already applied before inserts arrive.
