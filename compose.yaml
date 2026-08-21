@@ -39,6 +39,11 @@ services:
       EVIDENCE_PLATFORM_BASE_URL: ${EVIDENCE_PLATFORM_BASE_URL:-http://contextforge:4444}
       MODEL_GATEWAY_BASE_URL: ${MODEL_GATEWAY_BASE_URL:-http://model-gateway:4000}
       LEGAL_WORKSPACE_BYPASS_AUTH: "false"
+      # Must match the secret ContextForge actually signs with. Coolify supplies
+      # it; declared here so the value reaches the container (there is no .env
+      # in the Coolify build context). Unset => middleware fail-closes with 503.
+      CF_JWT_SECRET_KEY: ${CF_JWT_SECRET_KEY}
+      CF_GATEWAY_TOKEN: ${CF_GATEWAY_TOKEN:-}
     volumes:
       - /var/lib/legal-workspace/workspace:/data/workspace
     healthcheck:
