@@ -105,6 +105,23 @@ class WorkspaceStore:
     """Load and save WorkspaceState from/to the database."""
 
     @staticmethod
+    def stored_matter_id(*, store_dir: str | None = None) -> uuid.UUID | None:
+        """Return the active matter_id in this DB file, or None if empty.
+
+        Single-case workspace: if more than one row exists (e.g. import/Agno
+        residue), pick the most recently synced and let the next save clean up
+        the rest.
+        """
+        create_tables(store_dir=store_dir)
+        with db_session(store_dir=store_dir) as session:
+            row = session.execute(
+                select(models.LegalCoreMatterRef.matter_id)
+                .order_by(models.LegalCoreMatterRef.synced_at.desc())
+                .limit(1)
+            ).scalar_one_or_none()
+        return row
+
+    @staticmethod
     def load(
         matter_id: uuid.UUID, *, store_dir: str | None = None
     ) -> dict[str, Any] | None:
@@ -581,12 +598,51 @@ class WorkspaceStore:
         assert matter_id is not None
 
         with db_session(store_dir=store_dir) as session:
-            # Snapshot the stored matter before we upsert. Single-case workspace, so
-            # there is at most one matter row in this DB file.
+            # Snapshot the stored matter before we replace anything. Single-case
+            # workspace: pick the most recently synced row if more than one exists.
             stored_matter_id = session.execute(
                 select(models.LegalCoreMatterRef.matter_id)
+                .order_by(models.LegalCoreMatterRef.synced_at.desc())
+                .limit(1)
             ).scalar_one_or_none()
-            delete_scope = stored_matter_id if stored_matter_id is not None else matter_id
+
+            # Replace the entire workspace contents. Delete dependent rows before
+            # their parents so foreign-key constraints stay satisfied.
+            for model in (
+                models.LegalWorkProductDraftSection,
+                models.LegalWorkProductStrategyNote,
+                models.LegalWorkProductRedTeamRun,
+                models.LegalWorkProductReviewDecision,
+                models.LegalWorkProductReleaseManifest,
+                models.LegalCoreTodo,
+                models.LegalCoreDocketEvent,
+                models.LegalCoreDiscoveryRequest,
+                models.LegalCoreInvestigationRequest,
+                models.LegalCoreExhibitAnnotation,
+                models.LegalCoreAgentRun,
+                models.LegalCoreFilingOverride,
+                models.LegalResearchAuthority,
+                models.LegalResearchCurrencyFlag,
+                models.LegalResearchQuestion,
+            ):
+                session.execute(model.__table__.delete())
+
+            session.execute(models.LegalWorkProductWorkProductVersion.__table__.delete())
+            session.execute(models.LegalWorkProductWorkProduct.__table__.delete())
+            session.execute(models.LegalCoreSourcePackageOmission.__table__.delete())
+            session.execute(models.LegalCoreSourcePackage.__table__.delete())
+            session.execute(models.LegalCoreCourtCaseRef.__table__.delete())
+
+            # If the matter identity changed, remove the old matter row after its
+            # dependents are gone. The new matter row is upserted below.
+            if stored_matter_id is not None and stored_matter_id != matter_id:
+                session.execute(
+                    models.LegalCoreMatterRef.__table__.delete().where(
+                        models.LegalCoreMatterRef.matter_id == stored_matter_id
+                    )
+                )
+
+            session.commit()
 
             # Upsert matter
             matter = session.get(models.LegalCoreMatterRef, matter_id)
@@ -689,61 +745,6 @@ class WorkspaceStore:
                 settings.case_phase = state_dict.get("case_phase", "Discovery")
                 settings.updated_at = _now()
 
-            # Commit metadata first so deletes/inserts are not in the same flush.
-            session.commit()
-
-            # Delete child rows tied to the stored matter_id. If the matter_id
-            # changed during Agno projection, this removes the old rows before the
-            # new ones are inserted.
-            for model in (
-                models.LegalWorkProductDraftSection,
-                models.LegalWorkProductStrategyNote,
-                models.LegalWorkProductRedTeamRun,
-                models.LegalWorkProductReviewDecision,
-                models.LegalWorkProductReleaseManifest,
-                models.LegalCoreTodo,
-                models.LegalCoreDocketEvent,
-                models.LegalCoreDiscoveryRequest,
-                models.LegalCoreInvestigationRequest,
-                models.LegalCoreExhibitAnnotation,
-                models.LegalCoreAgentRun,
-                models.LegalCoreFilingOverride,
-                models.LegalResearchAuthority,
-                models.LegalResearchCurrencyFlag,
-                models.LegalResearchQuestion,
-            ):
-                session.execute(
-                    model.__table__.delete().where(model.matter_id == delete_scope)
-                )
-
-            # Work product version has no matter_id column; remove versions whose
-            # parent work product belongs to the stored matter, then remove the products.
-            wp_subquery = select(models.LegalWorkProductWorkProduct.work_product_id).where(
-                models.LegalWorkProductWorkProduct.matter_id == delete_scope
-            )
-            session.execute(
-                models.LegalWorkProductWorkProductVersion.__table__.delete().where(
-                    models.LegalWorkProductWorkProductVersion.work_product_id.in_(wp_subquery)
-                )
-            )
-            session.execute(
-                models.LegalWorkProductWorkProduct.__table__.delete().where(
-                    models.LegalWorkProductWorkProduct.matter_id == delete_scope
-                )
-            )
-
-            # If the matter_id changed, drop the old matter row (its court case goes
-            # via cascade). The new matter and court case were upserted above.
-            if stored_matter_id is not None and stored_matter_id != matter_id:
-                session.execute(
-                    models.LegalCoreMatterRef.__table__.delete().where(
-                        models.LegalCoreMatterRef.matter_id == stored_matter_id
-                    )
-                )
-
-            # Commit deletes in a separate transaction so SQLite unique constraints
-            # see the deletes as already applied before inserts arrive.
-            session.commit()
 
             # Drafts
             for draft in state_dict.get("drafts", []):

@@ -1,7 +1,20 @@
-# Byline: Grok · grok-4.6 · 2026-08-18
-# Local / Coolify-mirrored compose. Service names only. This desktop has no
-# Docker CLI — validate with yaml.safe_load. Boot verification is on the VPS.
+# Byline: Claude Code · Opus 5 · 2026-08-21 (VPS deploy shape; supersedes the
+# 2026-08-18 Grok draft, preserved at _stale/compose.yaml.pre-vps-2026-08-21)
+#
+# Target host: ovh-app (100.72.169.40) — the node that carries the `agno` bridge,
+# ContextForge:4444 and model-gateway:4000. Service names only, no tailnet IPs.
 # Volumes: bind-mount host dirs, never named volumes (owner backup rule).
+#
+# PERSISTENCE: the package installs into site-packages, so the repo-relative
+# default store dir resolves inside the image and is destroyed on redeploy.
+# LEGAL_WORKSPACE_STORE_DIR + the bind mount below are what make state durable.
+#
+# DATABASE: intentionally left on SQLite-in-the-bind-mount. The ORM declares flat
+# tables (legal_core_matter_ref) in the default schema, while sql/0001 creates
+# schema-qualified ones (legal_core.matter_ref) with an older column set, and
+# db/store.py bootstraps through the SQLite branch of get_engine(). Pointing
+# DATABASE_URL at the live PG18 today would deploy a path that has never run.
+# Tracked in docs/URGENT-TODO.md as the next increment.
 
 services:
   legal-api:
@@ -18,14 +31,22 @@ services:
       - path: .env
         required: false
     environment:
-      LEGAL_WORKSPACE_ENV: ${LEGAL_WORKSPACE_ENV:-dev}
+      LEGAL_WORKSPACE_ENV: ${LEGAL_WORKSPACE_ENV:-prod}
+      LEGAL_WORKSPACE_STORE_DIR: /data/workspace
       LEGAL_API_SERVICE: legal-api
-      LEGAL_POSTGRES_SERVICE: legal-postgres
-      EVIDENCE_PLATFORM_SERVICE: evidence-platform
+      EVIDENCE_PLATFORM_SERVICE: contextforge
       MODEL_GATEWAY_SERVICE: model-gateway
-      DATABASE_URL: ${DATABASE_URL:-postgresql://legal_os_app:change-me@legal-postgres:5432/ai}
-      EVIDENCE_PLATFORM_BASE_URL: ${EVIDENCE_PLATFORM_BASE_URL:-http://evidence-platform:8000}
+      EVIDENCE_PLATFORM_BASE_URL: ${EVIDENCE_PLATFORM_BASE_URL:-http://contextforge:4444}
       MODEL_GATEWAY_BASE_URL: ${MODEL_GATEWAY_BASE_URL:-http://model-gateway:4000}
+      LEGAL_WORKSPACE_BYPASS_AUTH: "false"
+    volumes:
+      - /var/lib/legal-workspace/workspace:/data/workspace
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8010/health',timeout=4).status==200 else 1)\""]
+      interval: 15s
+      timeout: 6s
+      retries: 5
+      start_period: 20s
     networks:
       - legal
       - agno
@@ -37,33 +58,14 @@ services:
     image: legal-workspace-web:0.1.0
     container_name: legal-web
     restart: unless-stopped
+    # 3010 is owned by `homepage` on ovh-app — do not reuse it.
     ports:
-      - "3010:3000"
+      - "3011:3000"
     environment:
       LEGAL_API_INTERNAL_URL: http://legal-api:8010
     depends_on:
-      - legal-api
-    networks:
-      - legal
-
-  legal-postgres:
-    image: agno-postgres:18-duckdb
-    container_name: legal-postgres
-    restart: unless-stopped
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_USER: ${DB_USER:-ai}
-      POSTGRES_PASSWORD: ${DB_PASS:-ai}
-      POSTGRES_DB: ${DB_DATABASE:-ai}
-    volumes:
-      - /var/lib/legal-postgres:/var/lib/postgresql
-      - ./sql/0001_legal_os_bootstrap.sql:/docker-entrypoint-initdb.d/01_legal_os.sql:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-ai}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      legal-api:
+        condition: service_healthy
     networks:
       - legal
 

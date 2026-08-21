@@ -13,6 +13,18 @@ from typing import Any
 
 
 def default_store_dir() -> Path:
+    """Return the workspace state directory.
+
+    ``LEGAL_WORKSPACE_STORE_DIR`` wins when set. It is required in the container:
+    the package is installed into site-packages, so the repo-relative default below
+    resolves to an ephemeral path inside the image that is destroyed on every
+    redeploy. On the VPS this points at a bind-mounted host directory.
+    """
+    override = os.environ.get("LEGAL_WORKSPACE_STORE_DIR", "").strip()
+    if override:
+        directory = Path(override)
+        directory.mkdir(parents=True, exist_ok=True)
+        return directory
     return Path(__file__).resolve().parents[3] / "data" / "workspace"
 
 

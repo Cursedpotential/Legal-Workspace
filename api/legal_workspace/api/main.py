@@ -5,11 +5,16 @@
 
 from __future__ import annotations
 
+import secrets
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
+from typing import Awaitable, Callable, Any
 from uuid import UUID
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel
 
 from legal_workspace import __version__
@@ -69,6 +74,61 @@ from legal_workspace.services.source_package import import_legal_source_package
 from legal_workspace.services.workspace import WORKSPACE, DraftSection
 
 
+def _constant_time_match(candidate: str, expected: str) -> bool:
+    """Compare credentials without leaking a useful length/timing signal."""
+    return secrets.compare_digest(candidate.encode("utf-8"), expected.encode("utf-8"))
+
+
+def _is_bearer_token_valid(authorization: str | None, expected_key: str) -> bool:
+    if not authorization:
+        return False
+    scheme, separator, credentials = authorization.partition(" ")
+    if not separator or not credentials:
+        return False
+    if scheme.lower() == "bearer":
+        return _constant_time_match(credentials, expected_key)
+    return False
+
+
+class ContextForgeAuthMiddleware(BaseHTTPMiddleware):
+    """Context Forge JWT authentication for Legal-Workspace API.
+
+    Exempts /health endpoint from authentication to allow health checks.
+    All other endpoints require valid Context Forge JWT token unless bypass_auth is enabled.
+    """
+
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        if request.url.path == "/health":
+            return await call_next(request)
+
+        settings = get_settings()
+
+        # Bypass authentication in development/testing when explicitly enabled
+        if settings.bypass_auth:
+            return await call_next(request)
+
+        # Reuse the same JWT secret key as Context Forge
+        expected_key = settings.contextforge_jwt_secret_key
+
+        if not expected_key:
+            return JSONResponse(
+                status_code=503,
+                content={"detail": "Context Forge authentication is not configured"},
+            )
+
+        if not _is_bearer_token_valid(
+            request.headers.get("authorization"), expected_key
+        ):
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "Valid Context Forge JWT token required"},
+                headers={"WWW-Authenticate": 'Bearer realm="Legal Workspace"'},
+            )
+
+        return await call_next(request)
+
 @asynccontextmanager
 async def _lifespan(_app: FastAPI):
     from legal_workspace.services.automation.scheduler import shutdown_scheduler, start_scheduler
@@ -98,6 +158,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(ContextForgeAuthMiddleware)
 
 
 class HealthResponse(BaseModel):
@@ -108,6 +169,39 @@ class HealthResponse(BaseModel):
     model_gateway: str
     timezone: str
     docker: str = "not-required-locally"
+
+
+class TokenRequest(BaseModel):
+    username: str
+    password: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+@app.post("/v1/token", response_model=TokenResponse)
+async def get_context_forge_token(body: TokenRequest):
+    """Mint a Legal Workspace JWT. NOT IMPLEMENTED — see the STUB note below.
+
+    Callers must currently obtain a Context Forge JWT directly from ContextForge
+    (:4444) and present it as ``Authorization: Bearer <token>``. This endpoint
+    exists so the shape is reserved, not because it works.
+    """
+    # STUB: /v1/token is not implemented and returns 501. Tracked as S1 in
+    # STUB: docs/URGENT-TODO.md. Unblocking it requires an owner decision on
+    # STUB: whether this service mints its own tokens or only ever verifies
+    # STUB: CF-issued ones; ContextForge's token endpoint contract is also
+    # STUB: unresolved. Do not paper over this with a locally-signed token —
+    # STUB: the live CF signing secret is itself broken (B1 in URGENT-TODO).
+    raise HTTPException(
+        status_code=501,
+        detail=(
+            "Not implemented: obtain a Context Forge JWT from ContextForge directly "
+            "and send it as 'Authorization: Bearer <token>'. See docs/URGENT-TODO.md S1."
+        ),
+    )
 
 
 class AgnoStatusResponse(BaseModel):
@@ -752,7 +846,48 @@ def apply_event(body: RevocationRequest) -> RevocationResponse:
     return RevocationResponse(products=products)
 
 
+class JsonExportResponse(BaseModel):
+    """Response model for JSON export endpoint."""
+    exported_at: str
+    version: str
+    workspace_state: dict[str, Any]
+
+
+@app.get("/v1/export/json", response_model=JsonExportResponse)
+def export_json() -> JsonExportResponse:
+    """Export complete workspace state as JSON for migration/backup.
+
+    This endpoint must be explicitly enabled via LEGAL_WORKSPACE_JSON_EXPORT_ENABLED=true
+    for security reasons. Returns a complete snapshot of the current workspace state
+    including all entities, relationships, and metadata.
+    """
+    settings = get_settings()
+    if not settings.json_export_enabled:
+        raise HTTPException(
+            status_code=403,
+            detail="JSON export is disabled. Set LEGAL_WORKSPACE_JSON_EXPORT_ENABLED=true to enable."
+        )
+
+    # Get raw dict state for JSON export (bypassing WorkspaceState validation)
+    from legal_workspace.db.store import WorkspaceStore
+    state_dict = WorkspaceStore.load(
+        matter_id=WORKSPACE._matter_id,
+        store_dir=WORKSPACE._store_dir_str
+    )
+    if state_dict is None:
+        # Fallback to loading through workspace and converting to dict
+        state = WORKSPACE.load()
+        state_dict = state.model_dump(mode='json')
+
+    return JsonExportResponse(
+        exported_at=datetime.now(UTC).isoformat(),
+        version=__version__,
+        workspace_state=state_dict
+    )
+
+
 from legal_workspace.api.automation_routes import router as automation_router
+from legal_workspace.api.calendar_routes import router as calendar_router
 from legal_workspace.api.citation_routes import router as citation_router
 from legal_workspace.api.factor_routes import router as factor_router
 from legal_workspace.api.ops_routes import router as ops_router
@@ -762,6 +897,7 @@ from legal_workspace.api.source_routes import source_router
 
 app.include_router(source_router)
 app.include_router(automation_router)
+app.include_router(calendar_router)
 app.include_router(citation_router)
 app.include_router(ops_router)
 app.include_router(privilege_router)

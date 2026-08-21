@@ -199,46 +199,53 @@ class Workspace:
         create_tables(store_dir=self._store_dir_str)
 
         # Determine the matter identity for this workspace.
-        legacy = read_json(self.state_path)
-        if legacy is not None and isinstance(legacy, dict):
-            self._matter_id = to_uuid(legacy.get("matter", {}).get("matter_id"))
+        # SQLite is canonical: if a matter already exists, adopt it. Only mint a
+        # new blank identity when the DB file is truly empty.
+        existing = WorkspaceStore.stored_matter_id(store_dir=self._store_dir_str)
+        if existing is not None:
+            self._matter_id = existing
         else:
-            self._matter_id = _blank_state().matter.matter_id
+            legacy = read_json(self.state_path)
+            if legacy is not None and isinstance(legacy, dict):
+                self._matter_id = to_uuid(legacy.get("matter", {}).get("matter_id"))
+            else:
+                blank = _blank_state()
+                self._matter_id = blank.matter.matter_id
+                self._write(blank, action="init")
 
         # Backwards compatibility: migrate existing JSON state to SQLite once.
+        legacy = read_json(self.state_path)
         if legacy is not None and self.store_dir.resolve() == default_store_dir().resolve():
             self._reconcile_real_data()
-        elif WorkspaceStore.load(self._matter_id, store_dir=self._store_dir_str) is None:
-            blank = _blank_state()
-            self._matter_id = blank.matter.matter_id
-            self._write(blank, action="init")
 
     def _write(self, state: WorkspaceState, action: str) -> None:
-        # SQLite is the source of truth; JSON files are kept for debug/backup only.
+        # SQLite is the source of truth.
         payload = state.model_dump(mode="json")
-        atomic_write_json(self.state_path, payload)
-        append_jsonl(
-            self.events_path,
-            {
-                "action": action,
-                "matter_id": str(state.matter.matter_id),
-                "package_id": str(state.package.package_id) if state.package else None,
-                "draft_count": len(state.drafts),
-                "strategy_count": len(state.strategy_notes),
-                "redteam_count": len(state.redteam_runs),
-                "open_todos": sum(1 for item in state.todos if item.status.value == "open"),
-                "review_count": len(state.reviews),
-                "release_count": len(state.releases),
-                "open_research": sum(
-                    1
-                    for item in state.research_questions
-                    if item.status.value in {"open", "unresolved"}
-                ),
-                "docket_count": len(state.docket_events),
-                "investigation_count": len(state.investigations),
-            },
-        )
         WorkspaceStore.save(payload, action, store_dir=self._store_dir_str)
+
+        if get_settings().debug_json:
+            atomic_write_json(self.state_path, payload)
+            append_jsonl(
+                self.events_path,
+                {
+                    "action": action,
+                    "matter_id": str(state.matter.matter_id),
+                    "package_id": str(state.package.package_id) if state.package else None,
+                    "draft_count": len(state.drafts),
+                    "strategy_count": len(state.strategy_notes),
+                    "redteam_count": len(state.redteam_runs),
+                    "open_todos": sum(1 for item in state.todos if item.status.value == "open"),
+                    "review_count": len(state.reviews),
+                    "release_count": len(state.releases),
+                    "open_research": sum(
+                        1
+                        for item in state.research_questions
+                        if item.status.value in {"open", "unresolved"}
+                    ),
+                    "docket_count": len(state.docket_events),
+                    "investigation_count": len(state.investigations),
+                },
+            )
 
     def _reconcile_real_data(self) -> None:
         """Drop incomplete/test rows. Keep complete applicable authorities."""
@@ -509,15 +516,16 @@ class Workspace:
             raise ValueError("import an approved LegalSourcePackage first")
         section = next(row for row in state.drafts if row.section_id == section_id)
         result = validate_factual_citations(section.citations, state.package)
-        append_jsonl(
-            self.events_path,
-            {
-                "action": "gate",
-                "section_id": str(section_id),
-                "ok": result.ok,
-                "blockers": list(result.blockers),
-            },
-        )
+        if get_settings().debug_json:
+            append_jsonl(
+                self.events_path,
+                {
+                    "action": "gate",
+                    "section_id": str(section_id),
+                    "ok": result.ok,
+                    "blockers": list(result.blockers),
+                },
+            )
         return result
 
     def add_strategy_note(self, created: StrategyCreate) -> StrategyNote:
@@ -761,7 +769,8 @@ class Workspace:
             court_case_id=state.court_case.court_case_id,
             aggregate_version=len(state.investigations),
         )
-        append_jsonl(self.events_path, envelope.model_dump(mode="json"))
+        if get_settings().debug_json:
+            append_jsonl(self.events_path, envelope.model_dump(mode="json"))
         return request
 
     def list_investigations(self) -> list[InvestigationRequest]:
@@ -1073,10 +1082,11 @@ class Workspace:
             "review_rationale",
         ]
         if blockers:
-            append_jsonl(
-                self.events_path,
-                {"action": "release-blocked", "blockers": blockers},
-            )
+            if get_settings().debug_json:
+                append_jsonl(
+                    self.events_path,
+                    {"action": "release-blocked", "blockers": blockers},
+                )
             return ReleaseBuild(blocked=True, blockers=blockers)
         assert state.package is not None
         payload = {

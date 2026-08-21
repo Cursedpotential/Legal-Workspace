@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     model_gateway_base_url: str = Field(default="http://model-gateway:4000")
     database_url: str = Field(default_factory=default_sqlite_url)
     invoke_models: bool = Field(default=False, alias="LEGAL_WORKSPACE_INVOKE_MODELS")
+    debug_json: bool = Field(default=False, alias="LEGAL_WORKSPACE_DEBUG_JSON")
+    bypass_auth: bool = Field(default=False, alias="LEGAL_WORKSPACE_BYPASS_AUTH")
+    json_export_enabled: bool = Field(default=False, alias="LEGAL_WORKSPACE_JSON_EXPORT_ENABLED")
+    contextforge_jwt_secret_key: str = Field(default="", alias="CF_JWT_SECRET_KEY")
+    contextforge_gateway_token: str | None = Field(default=None, alias="CF_GATEWAY_TOKEN")
 
     @field_validator(
         "legal_api_service",

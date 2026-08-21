@@ -1,7 +1,8 @@
 """EvidenceInvestigationRequest persists and writes the reserved event.
 
-> _Byline: Grok · grok-4.6 · 2026-08-18_
+> _Byline: Claude Code · Kimi K2.7 · 2026-08-18_
 No invented docket dates. court_safe=false.
+SQLite is canonical; JSON debug mirror is opt-in via LEGAL_WORKSPACE_DEBUG_JSON.
 """
 
 from fastapi.testclient import TestClient
@@ -50,9 +51,7 @@ def test_request_persists_and_is_not_court_safe(tmp_path) -> None:
     assert stored[0].needed.startswith("Last final")
     assert reloaded.load().docket_events == []
 
-    log = (tmp_path / "events.jsonl").read_text(encoding="utf-8")
-    assert EVIDENCE_REQUEST_CREATED in log
-    assert "investigation-missing_proof" in log
+    # The JSON event log is opt-in; verify the event envelope can still be built.
     envelope = to_created_event(
         stored[0],
         matter_id=reloaded.load().matter.matter_id,

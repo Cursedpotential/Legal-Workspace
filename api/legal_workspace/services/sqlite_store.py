@@ -41,11 +41,14 @@ def connect(store_dir: Path) -> sqlite3.Connection:
 
 
 def load_settings(store_dir: Path) -> AppSettingsRow:
-    with connect(store_dir) as conn:
+    conn = connect(store_dir)
+    try:
         row = conn.execute(
             "SELECT theme, display_timezone, confidential_mode, case_phase "
             "FROM legal_core_app_settings WHERE id = 1"
         ).fetchone()
+    finally:
+        conn.close()
     if row is None:
         return AppSettingsRow(
             confidential_mode=False,
@@ -59,6 +62,7 @@ def load_settings(store_dir: Path) -> AppSettingsRow:
         display_timezone=row["display_timezone"],
         case_phase=row["case_phase"],
     )
+
 
 
 def save_settings(

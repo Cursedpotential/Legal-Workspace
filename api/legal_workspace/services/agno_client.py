@@ -81,7 +81,19 @@ def _base_url() -> str:
 def _client(existing: httpx.Client | None) -> tuple[httpx.Client, bool]:
     if existing is not None:
         return existing, False
-    return httpx.Client(timeout=httpx.Timeout(HEALTH_TIMEOUT, connect=CONNECT_TIMEOUT)), True
+
+    settings = get_settings()
+    headers = {}
+
+    # Add Context Forge gateway token for authentication when making requests to Agno
+    if settings.contextforge_gateway_token:
+        headers["Authorization"] = f"Bearer {settings.contextforge_gateway_token}"
+
+    client = httpx.Client(
+        timeout=httpx.Timeout(HEALTH_TIMEOUT, connect=CONNECT_TIMEOUT),
+        headers=headers
+    )
+    return client, True
 
 
 def _project_matter(row: object) -> MatterProjection | None:

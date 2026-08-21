@@ -12,6 +12,7 @@ from typing import Any
 
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
+from sqlalchemy.pool import NullPool
 
 
 @lru_cache(maxsize=8)
@@ -35,6 +36,7 @@ def get_engine(database_url: str | None = None, store_dir: str | None = None) ->
         engine = create_engine(
             url,
             connect_args={"check_same_thread": False},
+            poolclass=NullPool,
             echo=False,
         )
         _configure_sqlite(engine)

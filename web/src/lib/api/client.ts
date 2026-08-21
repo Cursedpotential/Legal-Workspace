@@ -13,12 +13,21 @@ export function legalApiBase(): string {
   return process.env.NEXT_PUBLIC_LEGAL_API_URL ?? "http://127.0.0.1:8010";
 }
 
+function getAuthHeaders(): HeadersInit {
+  const token = localStorage.getItem('contextforge_token') ||
+                sessionStorage.getItem('contextforge_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export async function fetchHealth(): Promise<{
   status: string;
   service: string;
   evidence_platform: string;
 }> {
-  const response = await fetch(`${legalApiBase()}/health`, { cache: "no-store" });
+  const response = await fetch(`${legalApiBase()}/health`, {
+    cache: "no-store",
+    headers: getAuthHeaders()
+  });
   if (!response.ok) {
     throw new Error(`legal-api health ${response.status}`);
   }
@@ -30,7 +39,10 @@ export async function fetchAgnoStatus(): Promise<{
   evidence_platform: string;
   matters_visible: boolean;
 }> {
-  const response = await fetch(`${legalApiBase()}/v1/agno/status`, { cache: "no-store" });
+  const response = await fetch(`${legalApiBase()}/v1/agno/status`, {
+    cache: "no-store",
+    headers: getAuthHeaders()
+  });
   if (!response.ok) {
     throw new Error(`legal-api agno status ${response.status}`);
   }
@@ -71,7 +83,10 @@ export async function fetchMatter(): Promise<{
   foc_confirmed: boolean;
   next_surfaces: Array<{ path: string; label: string; help: string }>;
 }> {
-  const response = await fetch(`${legalApiBase()}/v1/matter`, { cache: "no-store" });
+  const response = await fetch(`${legalApiBase()}/v1/matter`, {
+    cache: "no-store",
+    headers: getAuthHeaders()
+  });
   if (!response.ok) {
     throw new Error(`legal-api matter ${response.status}`);
   }
@@ -135,7 +150,10 @@ export function structuralBothParentPrompt(factor: FactorRow): string {
 }
 
 export async function fetchFactors(): Promise<FactorRow[]> {
-  const response = await fetch(`${legalApiBase()}/v1/factors`, { cache: "no-store" });
+  const response = await fetch(`${legalApiBase()}/v1/factors`, {
+    cache: "no-store",
+    headers: getAuthHeaders()
+  });
   if (!response.ok) {
     throw new Error(`legal-api factors ${response.status}`);
   }
@@ -153,6 +171,7 @@ export async function fetchFactors(): Promise<FactorRow[]> {
 export async function fetchFactorAnalysis(letter: string): Promise<FactorAnalysisView | null> {
   const response = await fetch(`${legalApiBase()}/v1/factors/${letter}/analysis`, {
     cache: "no-store",
+    headers: getAuthHeaders()
   });
   if (response.status === 404) {
     return null;
@@ -180,7 +199,10 @@ function normalizeIssue(raw: Partial<IssueNode> & { title: string; governing_aut
 }
 
 export async function fetchIssueTree(): Promise<IssueNode> {
-  const response = await fetch(`${legalApiBase()}/v1/issues`, { cache: "no-store" });
+  const response = await fetch(`${legalApiBase()}/v1/issues`, {
+    cache: "no-store",
+    headers: getAuthHeaders()
+  });
   if (response.ok) {
     return normalizeIssue(await response.json());
   }
@@ -211,7 +233,10 @@ export type ProviderGrid = {
 };
 
 export async function fetchProviders(): Promise<ProviderGrid> {
-  const response = await fetch(`${legalApiBase()}/v1/providers`, { cache: "no-store" });
+  const response = await fetch(`${legalApiBase()}/v1/providers`, {
+    cache: "no-store",
+    headers: getAuthHeaders()
+  });
   if (!response.ok) {
     throw new Error(`legal-api providers ${response.status}`);
   }
@@ -232,7 +257,10 @@ export async function fetchDrafts(): Promise<
     } | null;
   }>
 > {
-  const response = await fetch(`${legalApiBase()}/v1/drafts`, { cache: "no-store" });
+  const response = await fetch(`${legalApiBase()}/v1/drafts`, {
+    cache: "no-store",
+    headers: getAuthHeaders()
+  });
   if (!response.ok) {
     throw new Error(`legal-api drafts ${response.status}`);
   }

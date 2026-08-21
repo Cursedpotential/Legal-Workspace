@@ -36,9 +36,11 @@ def test_health_uses_service_names_not_ips() -> None:
         assert "100." not in value
 
 
-def test_import_endpoint_omits_candidates(tmp_path) -> None:
+def test_import_endpoint_omits_candidates(tmp_path, client_with_auth) -> None:
     main_mod.WORKSPACE = workspace_mod.get_workspace(tmp_path)
-    client = TestClient(app)
+    client = client_with_auth
+    # Add Context Forge authentication header
+    client.headers = {"Authorization": "Bearer test-jwt-secret-for-testing"}
     payload = {
         "package_id": str(uuid4()),
         "manifest_hash": "sha256:pkg",

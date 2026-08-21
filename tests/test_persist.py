@@ -1,6 +1,7 @@
 """Persistence is the source of truth. A new Workspace must reload disk.
 
-> _Byline: Grok · grok-4.6 · 2026-08-18_
+> _Byline: Claude Code · Kimi K2.7 · 2026-08-18_
+SQLite is canonical; JSON debug mirror is opt-in via LEGAL_WORKSPACE_DEBUG_JSON.
 """
 
 from __future__ import annotations
@@ -56,8 +57,9 @@ def test_reload_from_disk_keeps_import_factor_and_draft(tmp_path) -> None:
     )
     drafted = first.draft_factor_section(FactorLetter.J, "Factor (j)", "Dated conduct.")
 
-    assert (tmp_path / "state.json").is_file()
-    assert (tmp_path / "events.jsonl").is_file()
+    # By default SQLite is canonical; JSON debug files are not written.
+    assert not (tmp_path / "state.json").is_file()
+    assert not (tmp_path / "events.jsonl").is_file()
 
     reloaded = Workspace(tmp_path)
     state = reloaded.load()
@@ -67,7 +69,3 @@ def test_reload_from_disk_keeps_import_factor_and_draft(tmp_path) -> None:
     assert len(factor_j.petitioner.citations) == 1
     assert state.drafts[0].section_id == drafted.section_id
     assert reloaded.gate_draft(drafted.section_id).ok is True
-    log = (tmp_path / "events.jsonl").read_text(encoding="utf-8")
-    assert "import" in log
-    assert "draft" in log
-    assert "gate" in log
