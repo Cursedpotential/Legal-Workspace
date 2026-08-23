@@ -5,6 +5,7 @@
 
 from datetime import UTC, datetime, timedelta
 
+import pytest
 from fastapi.testclient import TestClient
 
 from legal_workspace.api import main as main_mod
@@ -79,3 +80,50 @@ def test_http_docket(tmp_path) -> None:
     assert removed.status_code == 200
     assert client.get("/v1/docket-events").json() == []
     assert client.delete(f"/v1/docket-events/{event_id}").status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# DELETE /v1/calendar/events/{event_id}
+#
+# Distinct from /v1/docket-events/{id} above — this is calendar_routes.py's own
+# delete, mounted at main.py:900. It was previously untested.
+#
+# Byline amendment: Claude Code · Opus 5 · 2026-08-23
+# ---------------------------------------------------------------------------
+
+
+def test_calendar_delete_rejects_malformed_id_with_400() -> None:
+    """A malformed event id must return 400, not crash the handler.
+
+    Regression test: the handler called UUID(event_id) without importing UUID,
+    so it raised NameError. NameError is not caught by the route's
+    `except ValueError` / `except StopIteration` clauses, so every call to this
+    endpoint returned an unhandled 500 instead of the intended 400.
+    """
+    client = TestClient(app)
+    client.headers = {"Authorization": "Bearer test-jwt-secret-for-testing"}
+
+    response = client.delete("/v1/calendar/events/not-a-uuid")
+
+    assert response.status_code == 400, response.text
+    assert "Invalid event ID format" in response.text
+
+
+@pytest.mark.xfail(
+    reason=(
+        "Blocked by URGENT-TODO B4: the dev SQLite at data/workspace/legal.sqlite is "
+        "columns behind the ORM, so this route's workspace lookup raises "
+        "OperationalError: no such column: legal_core_matter_ref.last_agno_verify. "
+        "The assertion below is the intended behavior; remove this xfail once the dev "
+        "DB is rebuilt from the ORM."
+    ),
+    strict=False,
+)
+def test_calendar_delete_unknown_id_returns_404() -> None:
+    """A well-formed id that matches no event must return 404."""
+    client = TestClient(app)
+    client.headers = {"Authorization": "Bearer test-jwt-secret-for-testing"}
+
+    response = client.delete("/v1/calendar/events/00000000-0000-4000-8000-000000000000")
+
+    assert response.status_code == 404, response.text
