@@ -43,3 +43,8 @@ docs/planning/original-context/donors/
 # Donor dumps + local quarantine — not part of the deployable tree
 docs/planning/original-context/main-donor-inspiration-content/
 _stale/
+
+# Source archives for planning docs stay on disk / in backup, not in git
+# (98MB zip exceeds GitHub limits; content is third-party source snapshots).
+# Added 2026-08-23 during reconciliation.
+docs/planning/original-context/Source zips/

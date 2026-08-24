@@ -54,6 +54,10 @@ def test_http_docket(tmp_path) -> None:
     store = workspace_mod.get_workspace(tmp_path)
     main_mod.WORKSPACE = store
     client = TestClient(app)
+    # ContextForge JWT auth was added to the app after this test was written, so
+    # the bare client 401s on every request. Same header as tests/test_api.py:43,
+    # matching the secret conftest.py sets. — Claude Code · Opus 5 · 2026-08-23
+    client.headers = {"Authorization": "Bearer test-jwt-secret-for-testing"}
     empty = client.get("/v1/docket-events")
     assert empty.status_code == 200
     assert empty.json() == []
