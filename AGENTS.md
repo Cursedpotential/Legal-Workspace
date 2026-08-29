@@ -126,11 +126,11 @@ Do not start with a generic chat screen.
 
 ## This case
 
-The custody packet at
-`../Legal-desktop/donors/custodyguide_v1complete_20260812/`
-**is this Matter**. Do not generalize it into a multi-client library.
-
-Handoffs (reviewed in full): `../Legal-desktop/artifacts (3)/`.
+This remains a single-matter workspace; do not generalize it into a multi-client library. Historical
+planning documents refer to `../Legal-desktop/` donor and handoff directories, but those directories
+are not present in the live workspace as of 2026-08-29. Do not infer, recreate, or claim access to
+those source packets. Use the reviewed material already retained under `docs/planning/` and record a
+blocker if an absent donor is specifically required.
 
 Sister repo `../Agno-MCP-Platform/` is CocoIndex-indexed. Search it with
 `ccc search` **from that directory** — do not `ccc init` here and do
