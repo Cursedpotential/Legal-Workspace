@@ -1,5 +1,8 @@
 # HANDOFF — Legal-Workspace persistence + build reconciliation (2026-08-19)
 
+> _Naming (D-138, 2026-09-05; applied 2026-09-06): this product is **advocatio** (formerly Legal-Workspace / Legal Workspace); the evidence platform it consumes is **Indicia Probata** / `probata` (formerly Agno-MCP-Platform). Directory: `probata/modules/advocatio/` (old name kept as a junction). GitHub repo name unchanged pending its own decision. Canon: `probata/docs/NAMING.md`. Historical text below is left verbatim; both names remain valid in recall stores (D-142)._
+
+
 > _Byline: Claude Code · Kimi K2.7 · 2026-08-19_
 STATUS: PARTIAL
 BUILD_STATUS: FAIL

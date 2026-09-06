@@ -1,5 +1,8 @@
 # Deep Analysis — Part 1: Public Donor Repos
 
+> _Naming (D-138, 2026-09-05; applied 2026-09-06): this product is **advocatio** (formerly Legal-Workspace / Legal Workspace); the evidence platform it consumes is **Indicia Probata** / `probata` (formerly Agno-MCP-Platform). Directory: `probata/modules/advocatio/` (old name kept as a junction). GitHub repo name unchanged pending its own decision. Canon: `probata/docs/NAMING.md`. Historical text below is left verbatim; both names remain valid in recall stores (D-142)._
+
+
 Scope: [genego-io/legal-terminal](https://github.com/genego-io/legal-terminal) (shape donor) and [agentic-ops/legal-mcp](https://github.com/agentic-ops/legal-mcp) (primary toolset). Your customized local repos (custodyguide, your legal-mcp fork, and the other archives in `Sources and skills\`) are out of scope here — those need the other agent with local filesystem access. Sister-repo mapping (`mcp-platform-agno-mvp`) and the overlap matrix come after this.
 
 ---

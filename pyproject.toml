@@ -2,7 +2,7 @@
 [project]
 name = "legal-workspace"
 version = "0.1.0"
-description = "Legal analysis, strategy, drafting, and filing preparation sibling of Agno-MCP-Platform."
+description = "advocatio (formerly Legal Workspace): legal analysis, strategy, drafting, and filing preparation sibling of Indicia Probata / probata (formerly Agno-MCP-Platform)."
 requires-python = ">=3.12,<4"
 readme = "README.md"
 dependencies = [

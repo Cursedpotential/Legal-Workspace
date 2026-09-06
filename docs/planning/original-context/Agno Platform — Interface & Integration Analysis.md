@@ -1,5 +1,8 @@
 # Agno MCP Platform — Interface & Integration Analysis for Legal OS
 
+> _Naming (D-138, 2026-09-05; applied 2026-09-06): this product is **advocatio** (formerly Legal-Workspace / Legal Workspace); the evidence platform it consumes is **Indicia Probata** / `probata` (formerly Agno-MCP-Platform). Directory: `probata/modules/advocatio/` (old name kept as a junction). GitHub repo name unchanged pending its own decision. Canon: `probata/docs/NAMING.md`. Historical text below is left verbatim; both names remain valid in recall stores (D-142)._
+
+
 Analyzed directly from source: [github.com/Cursedpotential/mcp-platform-agno-mvp](https://github.com/Cursedpotential/mcp-platform-agno-mvp), cloned at commit head as of 2026-08-17 (repo updated same day). ~2,400 files. This is a live, actively-developed platform, not a stub — treat everything below as current state, not aspiration, except where marked "not yet built."
 
 **Key decision from this conversation, recorded here:** the "AI Legal Team" (Part 3 of the platform's own roadmap) moves to Legal OS instead of being built inside the Agno Platform. This changes the ownership boundary from what the Agno Platform's own docs currently assume — see the "Ownership Boundary" section and "Open Items" below for what needs to be reconciled.
