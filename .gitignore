@@ -48,3 +48,13 @@ _stale/
 # (98MB zip exceeds GitHub limits; content is third-party source snapshots).
 # Added 2026-08-23 during reconciliation.
 docs/planning/original-context/Source zips/
+
+# Owner-preserved original build kit: archives/donors, not application source.
+/resources/build-kit/
+/to_be_deleted/
+
+# Private owner-resource triage; reviewed public manifests may be promoted separately.
+/resources/reference-review/
+
+# Local publication manifests and working receipts.
+/.reconciliation/
