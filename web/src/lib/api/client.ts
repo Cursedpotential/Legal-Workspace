@@ -1,22 +1,14 @@
 // Byline: Grok · grok-4.6 · 2026-08-18
-// Browser talks to legal-api only (loopback or same-origin). Never a tailnet IP.
-// Server components may use the legal-api service name.
+// Auth boundary: Codex · GPT-5 · 2026-09-12
+// Browser and server components use the same-origin Next BFF. Authentik's
+// identity JWT and the private API address never enter browser JavaScript.
 
 export function legalApiBase(): string {
   if (typeof window === "undefined") {
-    return (
-      process.env.LEGAL_API_INTERNAL_URL ??
-      process.env.NEXT_PUBLIC_LEGAL_API_URL ??
-      "http://127.0.0.1:8010"
-    );
+    const webBase = process.env.LEGAL_WEB_INTERNAL_URL ?? "http://127.0.0.1:3000";
+    return `${webBase.replace(/\/$/, "")}/api/legal`;
   }
-  return process.env.NEXT_PUBLIC_LEGAL_API_URL ?? "http://127.0.0.1:8010";
-}
-
-function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem('contextforge_token') ||
-                sessionStorage.getItem('contextforge_token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return "/api/legal";
 }
 
 export async function fetchHealth(): Promise<{
@@ -25,8 +17,7 @@ export async function fetchHealth(): Promise<{
   evidence_platform: string;
 }> {
   const response = await fetch(`${legalApiBase()}/health`, {
-    cache: "no-store",
-    headers: getAuthHeaders()
+    cache: "no-store"
   });
   if (!response.ok) {
     throw new Error(`legal-api health ${response.status}`);
@@ -40,8 +31,7 @@ export async function fetchAgnoStatus(): Promise<{
   matters_visible: boolean;
 }> {
   const response = await fetch(`${legalApiBase()}/v1/agno/status`, {
-    cache: "no-store",
-    headers: getAuthHeaders()
+    cache: "no-store"
   });
   if (!response.ok) {
     throw new Error(`legal-api agno status ${response.status}`);
@@ -84,8 +74,7 @@ export async function fetchMatter(): Promise<{
   next_surfaces: Array<{ path: string; label: string; help: string }>;
 }> {
   const response = await fetch(`${legalApiBase()}/v1/matter`, {
-    cache: "no-store",
-    headers: getAuthHeaders()
+    cache: "no-store"
   });
   if (!response.ok) {
     throw new Error(`legal-api matter ${response.status}`);
@@ -151,8 +140,7 @@ export function structuralBothParentPrompt(factor: FactorRow): string {
 
 export async function fetchFactors(): Promise<FactorRow[]> {
   const response = await fetch(`${legalApiBase()}/v1/factors`, {
-    cache: "no-store",
-    headers: getAuthHeaders()
+    cache: "no-store"
   });
   if (!response.ok) {
     throw new Error(`legal-api factors ${response.status}`);
@@ -170,8 +158,7 @@ export async function fetchFactors(): Promise<FactorRow[]> {
 
 export async function fetchFactorAnalysis(letter: string): Promise<FactorAnalysisView | null> {
   const response = await fetch(`${legalApiBase()}/v1/factors/${letter}/analysis`, {
-    cache: "no-store",
-    headers: getAuthHeaders()
+    cache: "no-store"
   });
   if (response.status === 404) {
     return null;
@@ -200,8 +187,7 @@ function normalizeIssue(raw: Partial<IssueNode> & { title: string; governing_aut
 
 export async function fetchIssueTree(): Promise<IssueNode> {
   const response = await fetch(`${legalApiBase()}/v1/issues`, {
-    cache: "no-store",
-    headers: getAuthHeaders()
+    cache: "no-store"
   });
   if (response.ok) {
     return normalizeIssue(await response.json());
@@ -234,8 +220,7 @@ export type ProviderGrid = {
 
 export async function fetchProviders(): Promise<ProviderGrid> {
   const response = await fetch(`${legalApiBase()}/v1/providers`, {
-    cache: "no-store",
-    headers: getAuthHeaders()
+    cache: "no-store"
   });
   if (!response.ok) {
     throw new Error(`legal-api providers ${response.status}`);
@@ -258,8 +243,7 @@ export async function fetchDrafts(): Promise<
   }>
 > {
   const response = await fetch(`${legalApiBase()}/v1/drafts`, {
-    cache: "no-store",
-    headers: getAuthHeaders()
+    cache: "no-store"
   });
   if (!response.ok) {
     throw new Error(`legal-api drafts ${response.status}`);

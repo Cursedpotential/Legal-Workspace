@@ -5,21 +5,17 @@
 
 from __future__ import annotations
 
-import secrets
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from typing import Awaitable, Callable, Any
+from typing import Any
 from uuid import UUID
 
-from fastapi import FastAPI, File, Form, HTTPException, Request, Response, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel
 
 from legal_workspace import __version__
+from legal_workspace.api.auth import AuthenticatedPrincipal, LegalWorkspaceAuthMiddleware
 from legal_workspace.config import get_settings
-from legal_workspace.services.routing import load_routing
 from legal_workspace.contracts.citations import AuthorityCitation, EvidenceCitation
 from legal_workspace.contracts.events import EventEnvelope
 from legal_workspace.contracts.identity import CourtCaseRef, MatterRef
@@ -27,20 +23,20 @@ from legal_workspace.contracts.source_package import LegalSourcePackage
 from legal_workspace.domain.agents import AgentRun, AgentRunCreate
 from legal_workspace.domain.authority_library import CuratedAuthority
 from legal_workspace.domain.calendar import DocketEvent, DocketEventCreate
-from legal_workspace.domain.filing import FilingOverride, FilingOverrideCreate, FilingReadiness
 from legal_workspace.domain.discovery import (
     DiscoveryCreate,
     DiscoveryRequest,
     DiscoveryStatusUpdate,
 )
-from legal_workspace.domain.investigation import InvestigationCreate, InvestigationRequest
 from legal_workspace.domain.exhibits import ExhibitAnnotationCreate, ExhibitCandidate
-from legal_workspace.domain.factors import FactorCitationLink, FactorEntry, FactorLetter, FactorNoteCreate
+from legal_workspace.domain.factors import (
+    FactorCitationLink,
+    FactorEntry,
+    FactorLetter,
+)
+from legal_workspace.domain.filing import FilingOverride, FilingOverrideCreate, FilingReadiness
+from legal_workspace.domain.investigation import InvestigationCreate, InvestigationRequest
 from legal_workspace.domain.issue import (
-    IssueChildCreate,
-    IssueElement,
-    IssueElementCreate,
-    IssuePatch,
     LegalIssue,
 )
 from legal_workspace.domain.privilege import PrivilegeScan, PrivilegeScanRequest, scan_text
@@ -63,71 +59,16 @@ from legal_workspace.domain.templates import (
 from legal_workspace.domain.todos import CaseTodo, TodoCreate, TodoPatch, TodoStatus
 from legal_workspace.domain.work_product import WorkProductVersion
 from legal_workspace.services.agno_client import read_status
+from legal_workspace.services.bates import BatesStampResult, stamp_bates_pdf
 from legal_workspace.services.citation_gate import (
     validate_authority_citations,
     validate_factual_citations,
 )
-from legal_workspace.services.bates import BatesStampResult, stamp_bates_pdf
 from legal_workspace.services.redaction import RedactionResult, redact_content_stream
 from legal_workspace.services.revocation import apply_evidence_event
 from legal_workspace.services.source_package import import_legal_source_package
 from legal_workspace.services.workspace import WORKSPACE, DraftSection
 
-
-def _constant_time_match(candidate: str, expected: str) -> bool:
-    """Compare credentials without leaking a useful length/timing signal."""
-    return secrets.compare_digest(candidate.encode("utf-8"), expected.encode("utf-8"))
-
-
-def _is_bearer_token_valid(authorization: str | None, expected_key: str) -> bool:
-    if not authorization:
-        return False
-    scheme, separator, credentials = authorization.partition(" ")
-    if not separator or not credentials:
-        return False
-    if scheme.lower() == "bearer":
-        return _constant_time_match(credentials, expected_key)
-    return False
-
-
-class ContextForgeAuthMiddleware(BaseHTTPMiddleware):
-    """Context Forge JWT authentication for Legal-Workspace API.
-
-    Exempts /health endpoint from authentication to allow health checks.
-    All other endpoints require valid Context Forge JWT token unless bypass_auth is enabled.
-    """
-
-    async def dispatch(
-        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
-    ) -> Response:
-        if request.url.path == "/health":
-            return await call_next(request)
-
-        settings = get_settings()
-
-        # Bypass authentication in development/testing when explicitly enabled
-        if settings.bypass_auth:
-            return await call_next(request)
-
-        # Reuse the same JWT secret key as Context Forge
-        expected_key = settings.contextforge_jwt_secret_key
-
-        if not expected_key:
-            return JSONResponse(
-                status_code=503,
-                content={"detail": "Context Forge authentication is not configured"},
-            )
-
-        if not _is_bearer_token_valid(
-            request.headers.get("authorization"), expected_key
-        ):
-            return JSONResponse(
-                status_code=401,
-                content={"detail": "Valid Context Forge JWT token required"},
-                headers={"WWW-Authenticate": 'Bearer realm="Legal Workspace"'},
-            )
-
-        return await call_next(request)
 
 @asynccontextmanager
 async def _lifespan(_app: FastAPI):
@@ -152,13 +93,7 @@ app = FastAPI(
     description="Legal practice sibling of the Evidence Platform. Not a second evidence store.",
     lifespan=_lifespan,
 )
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://127.0.0.1:3010", "http://localhost:3010"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-app.add_middleware(ContextForgeAuthMiddleware)
+app.add_middleware(LegalWorkspaceAuthMiddleware)
 
 
 class HealthResponse(BaseModel):
@@ -171,36 +106,25 @@ class HealthResponse(BaseModel):
     docker: str = "not-required-locally"
 
 
-class TokenRequest(BaseModel):
-    username: str
-    password: str
+class AuthIdentityResponse(BaseModel):
+    subject: str
+    username: str | None
+    email: str | None
+    groups: list[str]
+    source: str
 
 
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
+@app.get("/v1/auth/whoami", response_model=AuthIdentityResponse)
+def auth_whoami(request: Request) -> AuthIdentityResponse:
+    """Return only the validated, minimal server-side identity projection."""
 
-
-@app.post("/v1/token", response_model=TokenResponse)
-async def get_context_forge_token(body: TokenRequest):
-    """Mint a Legal Workspace JWT. NOT IMPLEMENTED — see the STUB note below.
-
-    Callers must currently obtain a Context Forge JWT directly from ContextForge
-    (:4444) and present it as ``Authorization: Bearer <token>``. This endpoint
-    exists so the shape is reserved, not because it works.
-    """
-    # STUB: /v1/token is not implemented and returns 501. Tracked as S1 in
-    # STUB: docs/URGENT-TODO.md. Unblocking it requires an owner decision on
-    # STUB: whether this service mints its own tokens or only ever verifies
-    # STUB: CF-issued ones; ContextForge's token endpoint contract is also
-    # STUB: unresolved. Do not paper over this with a locally-signed token —
-    # STUB: the live CF signing secret is itself broken (B1 in URGENT-TODO).
-    raise HTTPException(
-        status_code=501,
-        detail=(
-            "Not implemented: obtain a Context Forge JWT from ContextForge directly "
-            "and send it as 'Authorization: Bearer <token>'. See docs/URGENT-TODO.md S1."
-        ),
+    principal: AuthenticatedPrincipal = request.state.auth
+    return AuthIdentityResponse(
+        subject=principal.subject,
+        username=principal.username,
+        email=principal.email,
+        groups=list(principal.groups),
+        source=principal.source,
     )
 
 

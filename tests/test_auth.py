@@ -1,0 +1,185 @@
+"""Positive and negative tests for the advocatio API trust boundary.
+
+Byline: Codex · GPT-5 · 2026-09-12
+"""
+
+from __future__ import annotations
+
+import hashlib
+import hmac
+import time
+from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
+
+import jwt
+import pytest
+from cryptography.hazmat.primitives.asymmetric import rsa
+from fastapi.testclient import TestClient
+from legal_workspace.api import auth as auth_mod
+from legal_workspace.api.main import app
+
+ISSUER = "https://auth.example.test/application/o/advocatio/"
+AUDIENCE = "advocatio"
+BFF_SECRET = "test-only-bff-signing-secret-at-least-32-bytes"
+
+
+class _StaticJwksClient:
+    def __init__(self, public_key: rsa.RSAPublicKey) -> None:
+        self._public_key = public_key
+
+    def get_signing_key_from_jwt(self, _token: str) -> SimpleNamespace:
+        return SimpleNamespace(key=self._public_key)
+
+
+@pytest.fixture
+def oidc_keys() -> tuple[rsa.RSAPrivateKey, rsa.RSAPublicKey]:
+    private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    return private, private.public_key()
+
+
+@pytest.fixture
+def secure_auth(monkeypatch: pytest.MonkeyPatch, oidc_keys) -> rsa.RSAPrivateKey:
+    private, public = oidc_keys
+    monkeypatch.setenv("LEGAL_WORKSPACE_BYPASS_AUTH", "false")
+    monkeypatch.setenv("LEGAL_TAILNET_OWNER_ACCESS", "true")
+    monkeypatch.setenv("AUTHENTIK_ISSUER", ISSUER)
+    monkeypatch.setenv("AUTHENTIK_AUDIENCE", AUDIENCE)
+    monkeypatch.setenv("AUTHENTIK_JWKS_URL", f"{ISSUER}jwks/")
+    monkeypatch.setenv("AUTHENTIK_ALLOWED_GROUPS", "advocatio-users")
+    monkeypatch.setenv("LEGAL_BFF_SIGNING_SECRET", BFF_SECRET)
+
+    monkeypatch.setattr(auth_mod, "_jwks_client", lambda _url: _StaticJwksClient(public))
+    return private
+
+
+def _token(
+    private_key: rsa.RSAPrivateKey,
+    *,
+    audience: str = AUDIENCE,
+    expires_delta: timedelta = timedelta(minutes=5),
+    groups: list[str] | None = None,
+) -> str:
+    now = datetime.now(UTC)
+    return jwt.encode(
+        {
+            "iss": ISSUER,
+            "aud": audience,
+            "sub": "owner-subject",
+            "iat": now,
+            "exp": now + expires_delta,
+            "preferred_username": "owner",
+            "email": "owner@example.test",
+            "groups": groups if groups is not None else ["advocatio-users"],
+        },
+        private_key,
+        algorithm="RS256",
+        headers={"kid": "test-key"},
+    )
+
+
+def _signed_bff_headers(method: str, target: str, body: bytes = b"") -> dict[str, str]:
+    timestamp = str(int(time.time()))
+    nonce = "unit-test-nonce"
+    message = "\n".join(
+        (timestamp, nonce, method.upper(), target, hashlib.sha256(body).hexdigest())
+    ).encode()
+    signature = hmac.new(BFF_SECRET.encode(), message, hashlib.sha256).hexdigest()
+    return {
+        "x-legal-bff-timestamp": timestamp,
+        "x-legal-bff-nonce": nonce,
+        "x-legal-bff-signature": signature,
+    }
+
+
+def test_missing_auth_is_denied_when_not_on_tailnet(secure_auth) -> None:
+    response = TestClient(app).get("/v1/auth/whoami")
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Valid Authentik identity required"}
+
+
+def test_valid_authentik_token_projects_minimal_identity(secure_auth) -> None:
+    token = _token(secure_auth)
+    response = TestClient(app).get(
+        "/v1/auth/whoami",
+        headers={"authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "subject": "owner-subject",
+        "username": "owner",
+        "email": "owner@example.test",
+        "groups": ["advocatio-users"],
+        "source": "authentik",
+    }
+
+
+@pytest.mark.parametrize(
+    ("audience", "expires_delta", "groups"),
+    [
+        ("wrong-app", timedelta(minutes=5), ["advocatio-users"]),
+        (AUDIENCE, timedelta(minutes=-5), ["advocatio-users"]),
+        (AUDIENCE, timedelta(minutes=5), ["unrelated-users"]),
+    ],
+)
+def test_wrong_audience_expired_or_unauthorized_group_is_denied(
+    secure_auth,
+    audience: str,
+    expires_delta: timedelta,
+    groups: list[str],
+) -> None:
+    token = _token(
+        secure_auth,
+        audience=audience,
+        expires_delta=expires_delta,
+        groups=groups,
+    )
+    response = TestClient(app).get(
+        "/v1/auth/whoami",
+        headers={"authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 401
+
+
+def test_signed_bff_request_is_accepted_without_browser_bearer(secure_auth) -> None:
+    response = TestClient(app).get(
+        "/v1/auth/whoami",
+        headers=_signed_bff_headers("GET", "/v1/auth/whoami"),
+    )
+    assert response.status_code == 200
+    assert response.json()["source"] == "signed-bff"
+
+
+def test_invalid_bff_signature_is_denied(secure_auth) -> None:
+    headers = _signed_bff_headers("GET", "/v1/auth/whoami")
+    headers["x-legal-bff-signature"] = "0" * 64
+    response = TestClient(app).get("/v1/auth/whoami", headers=headers)
+    assert response.status_code == 401
+
+
+def test_direct_tailnet_owner_access_remains_unfettered(secure_auth) -> None:
+    client = TestClient(app, client=("100.100.10.20", 41200))
+    response = client.get("/v1/auth/whoami")
+    assert response.status_code == 200
+    assert response.json()["source"] == "tailnet"
+
+
+def test_forwarded_tailnet_address_does_not_bypass_socket_check(secure_auth) -> None:
+    response = TestClient(app).get(
+        "/v1/auth/whoami",
+        headers={"x-forwarded-for": "100.100.10.20"},
+    )
+    assert response.status_code == 401
+
+
+def test_missing_oidc_configuration_fails_closed(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("LEGAL_WORKSPACE_BYPASS_AUTH", "false")
+    monkeypatch.setenv("LEGAL_TAILNET_OWNER_ACCESS", "false")
+    monkeypatch.delenv("AUTHENTIK_ISSUER", raising=False)
+    monkeypatch.delenv("AUTHENTIK_AUDIENCE", raising=False)
+    monkeypatch.delenv("AUTHENTIK_JWKS_URL", raising=False)
+    monkeypatch.delenv("LEGAL_BFF_SIGNING_SECRET", raising=False)
+    response = TestClient(app).get(
+        "/v1/auth/whoami",
+        headers={"authorization": "Bearer not-a-jwt"},
+    )
+    assert response.status_code == 503

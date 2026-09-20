@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 import { legalApiBase } from "@/lib/api/client";
 
 async function fetchStrategy() {
@@ -28,7 +29,7 @@ export default async function StrategyPage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a8476" }}>
+      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
         My private notes
       </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
@@ -43,13 +44,13 @@ export default async function StrategyPage() {
       {notes.map((note) => (
         <article
           key={note.note_id}
-          style={{ borderTop: "1px solid #2a2e38", padding: "16px 0" }}
+          style={{ borderTop: "1px solid var(--border)", padding: "16px 0" }}
         >
           <strong>
             [{note.kind}] {note.title}
           </strong>
           <p>{note.body}</p>
-          <p style={{ color: "#8a8476" }}>
+          <p style={{ color: "var(--text-muted)" }}>
             {note.disclosure} · court_safe={String(note.court_safe)}
           </p>
         </article>

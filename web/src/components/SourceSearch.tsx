@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 "use client";
 
 import { useState } from "react";
@@ -57,9 +58,9 @@ export function SourceSearch() {
       <button type="submit" disabled={busy || !query.trim()}>
         {busy ? "Searching…" : "Search CourtListener"}
       </button>
-      {reason ? <p style={{ color: "#c9a227" }}>{reason}</p> : null}
+      {reason ? <p style={{ color: "var(--status-warn)" }}>{reason}</p> : null}
       {hits.map((hit) => (
-        <article key={`${hit.id}-${hit.url}`} style={{ borderTop: "1px solid #2a2e38", padding: "8px 0" }}>
+        <article key={`${hit.id}-${hit.url}`} style={{ borderTop: "1px solid var(--border)", padding: "8px 0" }}>
           <strong>{hit.name || hit.citation || hit.id}</strong>
           <p className="dim">
             {hit.citation} · {hit.court} · {hit.date}

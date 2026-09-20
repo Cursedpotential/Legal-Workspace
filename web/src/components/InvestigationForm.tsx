@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 "use client";
 
 // Byline: Grok · grok-4.6 · 2026-08-18
@@ -100,7 +101,7 @@ export function InvestigationForm() {
           style={{ display: "block", width: "100%", marginTop: 4 }}
         />
       </label>
-      {error ? <p style={{ color: "#c9a227" }}>{error}</p> : null}
+      {error ? <p style={{ color: "var(--status-warn)" }}>{error}</p> : null}
       <button type="submit" disabled={busy || !needed.trim() || !why.trim()}>
         {busy ? "Saving…" : "Request missing proof"}
       </button>

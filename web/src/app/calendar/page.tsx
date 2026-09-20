@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 import { DocketForm } from "@/components/DocketForm";
 import { EventDelete } from "@/components/EventDelete";
 import { legalApiBase } from "@/lib/api/client";
@@ -82,7 +83,7 @@ export default async function CalendarPage({
         }}
       >
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-          <div key={day} style={{ color: "#8a8476", fontSize: 12 }}>
+          <div key={day} style={{ color: "var(--text-muted)", fontSize: 12 }}>
             {day}
           </div>
         ))}
@@ -105,12 +106,12 @@ export default async function CalendarPage({
               key={`${day ?? "e"}-${index}`}
               style={{
                 minHeight: 88,
-                border: "1px solid #2a2e38",
+                border: "1px solid var(--border)",
                 padding: 8,
-                background: isToday ? "#1b1e26" : "transparent",
+                background: isToday ? "var(--surface-muted)" : "transparent",
               }}
             >
-              <div style={{ color: "#8a8476" }}>{day ?? ""}</div>
+              <div style={{ color: "var(--text-muted)" }}>{day ?? ""}</div>
               {dayEvents.map((item) => (
                 <div key={item.event_id} style={{ fontSize: 12, marginTop: 4 }}>
                   {item.kind}: {item.title}

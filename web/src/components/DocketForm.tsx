@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -115,7 +116,7 @@ export function DocketForm() {
         />{" "}
         Clerk-confirmed
       </label>
-      {error ? <p style={{ color: "#c9a227" }}>{error}</p> : null}
+      {error ? <p style={{ color: "var(--status-warn)" }}>{error}</p> : null}
       <button type="submit" disabled={busy || !title.trim() || !occursAt}>
         {busy ? "Saving…" : "Add docket event"}
       </button>

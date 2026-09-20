@@ -1,8 +1,11 @@
 # Byline: Claude Code · Opus 5 · 2026-08-21 (VPS deploy shape; supersedes the
 # 2026-08-18 Grok draft, preserved at _stale/compose.yaml.pre-vps-2026-08-21)
 #
-# Target host: ovh-app (100.72.169.40) — the node that carries the `agno` bridge,
-# ContextForge:4444 and model-gateway:4000. Service names only, no tailnet IPs.
+# Target host: ovh-app (100.72.169.40). Service names only inside containers.
+# Auth boundary revised by Codex · GPT-5 · 2026-09-12: the existing tailnet
+# bindings below stay direct for the enrolled owner. A separately configured
+# public HTTPS Traefik router protects legal-web with Authentik forward-auth.
+# legal-api is never attached to that public router.
 # Volumes: bind-mount host dirs, never named volumes (owner backup rule).
 #
 # PERSISTENCE: the package installs into site-packages, so the repo-relative
@@ -42,10 +45,14 @@ services:
       EVIDENCE_PLATFORM_BASE_URL: ${EVIDENCE_PLATFORM_BASE_URL:-http://contextforge:4444}
       MODEL_GATEWAY_BASE_URL: ${MODEL_GATEWAY_BASE_URL:-http://model-gateway:4000}
       LEGAL_WORKSPACE_BYPASS_AUTH: "false"
-      # Must match the secret ContextForge actually signs with. Coolify supplies
-      # it; declared here so the value reaches the container (there is no .env
-      # in the Coolify build context). Unset => middleware fail-closes with 503.
-      CF_JWT_SECRET_KEY: ${CF_JWT_SECRET_KEY}
+      LEGAL_TAILNET_OWNER_ACCESS: "true"
+      # Authentik's signing key remains in Authentik. legal-api fetches only the
+      # public JWKS and validates issuer, audience, signature and token lifetime.
+      AUTHENTIK_ISSUER: ${AUTHENTIK_ISSUER}
+      AUTHENTIK_AUDIENCE: ${AUTHENTIK_AUDIENCE}
+      AUTHENTIK_JWKS_URL: ${AUTHENTIK_JWKS_URL}
+      AUTHENTIK_ALLOWED_GROUPS: ${AUTHENTIK_ALLOWED_GROUPS:-}
+      LEGAL_BFF_SIGNING_SECRET: ${LEGAL_BFF_SIGNING_SECRET}
       CF_GATEWAY_TOKEN: ${CF_GATEWAY_TOKEN:-}
     volumes:
       - /var/lib/legal-workspace/workspace:/data/workspace
@@ -72,6 +79,9 @@ services:
       - "100.72.169.40:3011:3000"
     environment:
       LEGAL_API_INTERNAL_URL: http://legal-api:8010
+      LEGAL_WEB_INTERNAL_URL: http://legal-web:3000
+      LEGAL_PUBLIC_HOST: ${LEGAL_PUBLIC_HOST}
+      LEGAL_BFF_SIGNING_SECRET: ${LEGAL_BFF_SIGNING_SECRET}
     depends_on:
       legal-api:
         condition: service_healthy

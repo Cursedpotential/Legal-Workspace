@@ -30,6 +30,7 @@ import { captureLiveSurface, liveSurfaceKey } from "@/lib/liveSurface";
 import { useSurfaceCatalog } from "@/lib/useSurfaceCatalog";
 
 // Byline: Grok · grok-4.6 · 2026-08-18
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (shared surface contract and legal context strip)
 
 function readEmbedded(): boolean {
   if (typeof window === "undefined") return false;
@@ -91,10 +92,14 @@ function Sidebar({
   phase,
   onPhaseChange,
   surfaces,
+  confidential,
+  onConfidentialToggle,
 }: {
   phase: CasePhase;
   onPhaseChange: (phase: CasePhase) => void;
   surfaces: Surface[];
+  confidential: boolean;
+  onConfidentialToggle: () => void;
 }) {
   const pathname = usePathname();
   const groups = useMemo(() => {
@@ -110,10 +115,10 @@ function Sidebar({
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <span className="sidebar-brand-mark">LW</span>
+        <span className="sidebar-brand-mark" aria-hidden="true">A</span>
         <div>
-          <div className="sidebar-brand">Legal Workspace</div>
-          <div className="sidebar-brand-subtitle">Genesee County custody case</div>
+          <div className="sidebar-brand">advocatio</div>
+          <div className="sidebar-brand-subtitle">Legal Workdesk · Genesee County</div>
         </div>
       </div>
       <CasePhaseSwitcher phase={phase} onChange={onPhaseChange} />
@@ -142,7 +147,7 @@ function Sidebar({
         })}
       </nav>
       <div className="sidebar-version">
-        <ConfidentialToggle />
+        <ConfidentialToggle on={confidential} onToggle={onConfidentialToggle} />
         <div>Planning tool only — not a court filing.</div>
       </div>
     </aside>
@@ -175,8 +180,12 @@ function CasePhaseSwitcher({
   );
 }
 
-function ConfidentialToggle() {
+function useConfidentialMode() {
   const [on, setOn] = useState(false);
+  const [enforcement, setEnforcement] = useState<"checking" | "confirmed" | "local-only">(
+    "checking",
+  );
+
   useEffect(() => {
     void (async () => {
       try {
@@ -185,6 +194,7 @@ function ConfidentialToggle() {
           const body = (await response.json()) as { on?: boolean };
           const next = Boolean(body.on);
           setOn(next);
+          setEnforcement("confirmed");
           window.localStorage.setItem("lw-confidential", next ? "1" : "0");
           document.documentElement.dataset.confidential = next ? "on" : "off";
           return;
@@ -194,24 +204,38 @@ function ConfidentialToggle() {
       }
       const stored = window.localStorage.getItem("lw-confidential") === "1";
       setOn(stored);
+      setEnforcement("local-only");
       document.documentElement.dataset.confidential = stored ? "on" : "off";
     })();
   }, []);
-  function toggle() {
+
+  const toggle = useCallback(() => {
     const next = !on;
     setOn(next);
+    setEnforcement("checking");
     window.localStorage.setItem("lw-confidential", next ? "1" : "0");
     document.documentElement.dataset.confidential = next ? "on" : "off";
     void fetch(`${legalApiBase()}/v1/confidential`, {
       method: "PUT",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ on: next }),
-    }).catch(() => {
-      /* chrome stays local if legal-api is down */
-    });
-  }
+    })
+      .then((response) => setEnforcement(response.ok ? "confirmed" : "local-only"))
+      .catch(() => setEnforcement("local-only"));
+  }, [on]);
+
+  return { on, toggle, enforcement };
+}
+
+function ConfidentialToggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   return (
-    <button type="button" onClick={toggle} style={{ marginBottom: 8, width: "100%" }}>
+    <button
+      type="button"
+      className="confidential-toggle"
+      aria-pressed={on}
+      data-confidential={on ? "on" : "off"}
+      onClick={onToggle}
+    >
       {on ? "Confidential mode on" : "Confidential mode off"}
     </button>
   );
@@ -338,12 +362,12 @@ function StatusBar({
 
   return (
     <div className="status-bar">
-      <span style={{ color: apiOk ? "var(--status-ok)" : "var(--status-err)" }}>
-        {apiOk ? "●" : "○"} workspace backend
+      <span className="status-bar-item" data-status={apiOk ? "positive" : "destructive"}>
+        {apiOk ? "Available" : "Unavailable"}: workspace backend
       </span>
       <span>│</span>
-      <span style={{ color: evidenceOk ? "var(--status-ok)" : "var(--status-err)" }}>
-        {evidenceOk ? "●" : "○"} {evidenceName}
+      <span className="status-bar-item" data-status={evidenceOk ? "positive" : "destructive"}>
+        {evidenceOk ? "Available" : "Unavailable"}: {evidenceName}
         {agno?.matters_visible ? " · matters" : ""}
       </span>
       <span>│</span>
@@ -359,6 +383,58 @@ function StatusBar({
   );
 }
 
+function LegalContextStrip({
+  phase,
+  current,
+  confidential,
+  confidentialEnforcement,
+}: {
+  phase: CasePhase;
+  current: Surface;
+  confidential: boolean;
+  confidentialEnforcement: "checking" | "confirmed" | "local-only";
+}) {
+  return (
+    <section className="legal-context-strip" aria-label="Legal work context">
+      <div className="legal-context-primary">
+        <span className="legal-context-label">Matter</span>
+        <strong>Genesee County custody matter</strong>
+        <span className="legal-context-separator" aria-hidden="true">/</span>
+        <span>{PHASE_COPY[phase].label}</span>
+        <span className="legal-context-separator" aria-hidden="true">/</span>
+        <span>{navLabel(current)}</span>
+      </div>
+      <div className="legal-context-states" aria-label="Authority and release boundaries">
+        <span className="pr-status" data-pr-status="information">
+          Source policy: LegalSourcePackage only
+        </span>
+        <span className="pr-status" data-pr-status="caution">
+          Currency state: not verified here
+        </span>
+        <span className="pr-status" data-pr-status="caution">
+          Release policy: owner review required
+        </span>
+        <span
+          className="pr-status"
+          data-pr-status={
+            confidentialEnforcement === "local-only"
+              ? "destructive"
+              : confidential
+                ? "caution"
+                : "information"
+          }
+        >
+          {confidentialEnforcement === "checking"
+            ? "Confidential setting: checking"
+            : confidentialEnforcement === "local-only"
+              ? "Confidential setting: local only"
+              : `Confidential mode: ${confidential ? "on" : "off"}`}
+        </span>
+      </div>
+    </section>
+  );
+}
+
 export function TerminalShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const surfaces = useSurfaceCatalog();
@@ -368,6 +444,7 @@ export function TerminalShell({ children }: { children: ReactNode }) {
   const [pinReady, setPinReady] = useState(false);
   const [pinnedPath, setPinnedPath] = useState<string | null>(null);
   const [phase, setPhase] = useState<CasePhase>("Discovery");
+  const confidential = useConfidentialMode();
   const isPinned = pinnedPath === pathname;
 
   const selectPhase = useCallback((next: CasePhase) => {
@@ -509,9 +586,9 @@ export function TerminalShell({ children }: { children: ReactNode }) {
   }, [closeSplit, embedded, palette, pinnedPath, summonAssistant, toggleSplit]);
 
   const header = (
-    <div className="module-header">
-      <span className="module-title">{navLabel(current)}</span>
-      <span className="module-subtitle">Planning tool only — not a court filing with the court.</span>
+      <div className="module-header">
+        <span className="module-title">{navLabel(current)}</span>
+        <span className="module-subtitle">{navHelp(current)}</span>
       {!embedded ? (
         <>
           <span style={{ flex: 1 }} />
@@ -546,19 +623,24 @@ export function TerminalShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="app-shell" data-theme="dark">
-      <Sidebar phase={phase} onPhaseChange={selectPhase} surfaces={surfaces} />
+    <div className="app-shell pr-app" data-theme="dark">
+      <Sidebar
+        phase={phase}
+        onPhaseChange={selectPhase}
+        surfaces={surfaces}
+        confidential={confidential.on}
+        onConfidentialToggle={confidential.toggle}
+      />
       <div className="main-column">
         <div className="command-line-bar">
           <CommandLine phase={phase} surfaces={surfaces} />
-          <button
-            type="button"
-            className={`ask-btn ask-btn-bar${chatPinned ? " active" : ""}`}
-            onClick={summonAssistant}
-          >
-            {chatPinned ? "Close assistant" : "Ask"}
-          </button>
         </div>
+        <LegalContextStrip
+          phase={phase}
+          current={current}
+          confidential={confidential.on}
+          confidentialEnforcement={confidential.enforcement}
+        />
         <div className="workspace-area">
           <div className="module-shell">
             {header}

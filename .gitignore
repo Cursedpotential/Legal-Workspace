@@ -48,6 +48,11 @@ _stale/
 # (98MB zip exceeds GitHub limits; content is third-party source snapshots).
 # Added 2026-08-23 during reconciliation.
 docs/planning/original-context/Source zips/
+# The shared Propria contract keeps tokens.json as its authoritative editable source.
+# Override user-level *token*.json ignores for this exact repository-owned vendor pin.
+!web/vendor/
+!web/vendor/propria-design-contract/
+!web/vendor/propria-design-contract/tokens.json
 
 # Owner-preserved original build kit: archives/donors, not application source.
 /resources/build-kit/
@@ -58,3 +63,6 @@ docs/planning/original-context/Source zips/
 
 # Local publication manifests and working receipts.
 /.reconciliation/
+
+# Machine-local agent recall; preserve on disk, exclude from source publication.
+/.cnf/memories/project_memory.json

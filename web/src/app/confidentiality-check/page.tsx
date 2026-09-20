@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 import { PrivilegeScanForm } from "@/components/PrivilegeScanForm";
 import { ProviderTermsGrid } from "@/components/ProviderTermsGrid";
 import { fetchDrafts, fetchProviders } from "@/lib/api/client";
@@ -34,7 +35,7 @@ export default async function PrivilegePage() {
         <em>United States v. Heppner</em>, S.D.N.Y. 2026; ABA Model Rule
         1.6).
       </p>
-      <p style={{ color: "#8a8476" }}>
+      <p style={{ color: "var(--text-muted)" }}>
         court_safe=false · Keyword scan does not route. Confidential Mode
         uses the cited provider grid below.
       </p>

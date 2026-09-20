@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 import { ReviewForm } from "@/components/ReviewForm";
 import { legalApiBase } from "@/lib/api/client";
 
@@ -27,7 +28,7 @@ export default async function ReviewPage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a8476" }}>
+      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
         Your review
       </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
@@ -43,13 +44,13 @@ export default async function ReviewPage() {
       {reviews.map((review) => (
         <article
           key={review.review_id}
-          style={{ borderTop: "1px solid #2a2e38", padding: "16px 0" }}
+          style={{ borderTop: "1px solid var(--border)", padding: "16px 0" }}
         >
           <strong>
             [{review.verdict}] {review.reviewer}
           </strong>
           <p>{review.rationale}</p>
-          <p style={{ color: "#8a8476" }}>{review.content_hash}</p>
+          <p style={{ color: "var(--text-muted)" }}>{review.content_hash}</p>
         </article>
       ))}
     </>

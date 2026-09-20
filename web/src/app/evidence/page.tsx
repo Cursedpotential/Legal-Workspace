@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 import { ExhibitForm } from "@/components/ExhibitForm";
 import { legalApiBase } from "@/lib/api/client";
 
@@ -32,7 +33,7 @@ export default async function ExhibitsPage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a8476" }}>
+      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
         Evidence list
       </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
@@ -56,7 +57,7 @@ export default async function ExhibitsPage() {
       {exhibits.map((item) => (
         <article
           key={item.item_id}
-          style={{ borderTop: "1px solid #2a2e38", padding: "16px 0" }}
+          style={{ borderTop: "1px solid var(--border)", padding: "16px 0" }}
         >
           <strong>
             [{item.readiness}] {item.exhibit_label || "unlabeled"}
@@ -64,11 +65,11 @@ export default async function ExhibitsPage() {
           <p>
             {item.span_locator} · {item.custody_locator}
           </p>
-          <p style={{ color: "#8a8476" }}>
+          <p style={{ color: "var(--text-muted)" }}>
             Bates: {item.bates_number || "none"} · hash {item.content_hash} ·
             bytes={String(item.bytes_present)}
           </p>
-          <p style={{ color: "#8a8476" }}>
+          <p style={{ color: "var(--text-muted)" }}>
             {item.foundation ? `foundation: ${item.foundation} · ` : ""}
             {item.relevance ? `relevance: ${item.relevance}` : "no relevance note"}
           </p>

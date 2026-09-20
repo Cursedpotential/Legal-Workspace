@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -63,7 +64,7 @@ export function AgentRunForm() {
           style={{ display: "block", width: "100%", marginTop: 4 }}
         />
       </label>
-      {error ? <p style={{ color: "#c9a227" }}>{error}</p> : null}
+      {error ? <p style={{ color: "var(--status-warn)" }}>{error}</p> : null}
       <button type="submit" disabled={busy || !intent.trim()}>
         {busy ? "Recording…" : "Record routed run (no model call)"}
       </button>

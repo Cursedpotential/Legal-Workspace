@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 import { TemplateForm } from "@/components/TemplateForm";
 import { legalApiBase } from "@/lib/api/client";
 
@@ -22,7 +23,7 @@ export default async function TemplatePage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a8476" }}>
+      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
         Starting templates
       </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
@@ -37,13 +38,13 @@ export default async function TemplatePage() {
       {templates.map((template) => (
         <article
           key={template.template_id}
-          style={{ borderTop: "1px solid #2a2e38", padding: "16px 0" }}
+          style={{ borderTop: "1px solid var(--border)", padding: "16px 0" }}
         >
           <strong>
             [{template.kind}] {template.title}
           </strong>
           <p>{template.governing_authority}</p>
-          <p style={{ color: "#8a8476" }}>{template.notes}</p>
+          <p style={{ color: "var(--text-muted)" }}>{template.notes}</p>
           <ol>
             {template.outline.map((item) => (
               <li key={item}>{item}</li>

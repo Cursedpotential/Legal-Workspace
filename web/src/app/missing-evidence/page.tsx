@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 // Byline: Grok · grok-4.6 · 2026-08-18
 import { InvestigationForm } from "@/components/InvestigationForm";
 import { legalApiBase } from "@/lib/api/client";
@@ -26,7 +27,7 @@ export default async function MissingProofPage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a8476" }}>
+      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
         Missing evidence
       </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
@@ -42,19 +43,19 @@ export default async function MissingProofPage() {
       {requests.map((item) => (
         <article
           key={item.request_id}
-          style={{ borderTop: "1px solid #2a2e38", padding: "16px 0" }}
+          style={{ borderTop: "1px solid var(--border)", padding: "16px 0" }}
         >
           <strong>
             [{item.status}] {item.kind}
           </strong>
           <p>{item.needed}</p>
-          <p style={{ color: "#8a8476" }}>
+          <p style={{ color: "var(--text-muted)" }}>
             {item.why}
             {item.linked_issue ? ` · ${item.linked_issue}` : ""}
             {item.factor_letter ? ` · factor (${item.factor_letter})` : ""}
           </p>
           {item.contradiction ? <p>Contradiction: {item.contradiction}</p> : null}
-          <p style={{ color: "#8a8476" }}>
+          <p style={{ color: "var(--text-muted)" }}>
             {item.event_type} · court_safe={String(item.court_safe)}
           </p>
         </article>

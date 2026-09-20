@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 // Byline: Grok · grok-4.6 · 2026-08-18
 import { IssueAdd } from "@/components/IssueAdd";
 import { fetchIssueTree, type IssueNode } from "@/lib/api/client";
@@ -7,18 +8,18 @@ function IssueBranch({ node, depth = 0 }: { node: IssueNode; depth?: number }) {
     <article
       style={{
         marginLeft: depth ? 20 : 0,
-        borderTop: "1px solid #2a2e38",
+        borderTop: "1px solid var(--border)",
         padding: "16px 0",
       }}
     >
       <strong>{node.title}</strong>
-      <div style={{ color: "#8a8476", fontSize: 13 }}>{node.governing_authority}</div>
+      <div style={{ color: "var(--text-muted)", fontSize: 13 }}>{node.governing_authority}</div>
       {node.elements.length > 0 ? (
         <ul>
           {node.elements.map((element) => (
             <li key={element.element_id ?? element.label}>
               {element.label}
-              <span style={{ color: "#8a8476" }}>
+              <span style={{ color: "var(--text-muted)" }}>
                 {" "}
                 · supporting {element.supporting.length} · contradicting{" "}
                 {element.contradicting.length}

@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 import { ResearchForm } from "@/components/ResearchForm";
 import { legalApiBase } from "@/lib/api/client";
 
@@ -23,7 +24,7 @@ export default async function ResearchPage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a8476" }}>
+      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
         Open questions
       </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
@@ -38,15 +39,15 @@ export default async function ResearchPage() {
       {questions.map((item) => (
         <article
           key={item.question_id}
-          style={{ borderTop: "1px solid #2a2e38", padding: "16px 0" }}
+          style={{ borderTop: "1px solid var(--border)", padding: "16px 0" }}
         >
           <strong>
             [{item.status}] {item.question}
           </strong>
           <p>{item.plan}</p>
-          {item.uncertainty ? <p style={{ color: "#8a8476" }}>{item.uncertainty}</p> : null}
+          {item.uncertainty ? <p style={{ color: "var(--text-muted)" }}>{item.uncertainty}</p> : null}
           {item.adverse_notes ? <p>Adverse: {item.adverse_notes}</p> : null}
-          <p style={{ color: "#8a8476" }}>
+          <p style={{ color: "var(--text-muted)" }}>
             {item.jurisdiction}
             {item.authority_ids.length ? ` · ${item.authority_ids.join("; ")}` : ""}
           </p>

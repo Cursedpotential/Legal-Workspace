@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 import { DraftEditor } from "@/components/DraftEditor";
 import { fetchDrafts } from "@/lib/api/client";
 
@@ -25,18 +26,18 @@ export default async function DraftPage() {
       {drafts.map((draft) => (
         <article
           key={draft.section_id}
-          style={{ borderTop: "1px solid #2a2e38", padding: "16px 0" }}
+          style={{ borderTop: "1px solid var(--border)", padding: "16px 0" }}
         >
           <h2>{draft.heading}</h2>
           {draft.unsupported ? (
-            <p style={{ color: "#c9a227" }}>UNSUPPORTED</p>
+            <p style={{ color: "var(--status-warn)" }}>UNSUPPORTED</p>
           ) : null}
           <DraftEditor
             sectionId={draft.section_id}
             heading={draft.heading}
             body={draft.body}
           />
-          <p style={{ color: "#8a8476" }}>
+          <p style={{ color: "var(--text-muted)" }}>
             Factor ({draft.factor_letter}) · {draft.citation_count} citations
             {draft.support ? ` · unsupported paragraphs: ${draft.support.unsupported_count}` : ""}
           </p>
@@ -45,7 +46,7 @@ export default async function DraftPage() {
                 <p
                   key={paragraph.index}
                   style={{
-                    color: paragraph.state === "unsupported" ? "#c9a227" : "#8a8476",
+                    color: paragraph.state === "unsupported" ? "var(--status-warn)" : "var(--text-muted)",
                     fontSize: 13,
                   }}
                 >

@@ -9,9 +9,11 @@ Evidence-platform routing is `../Probata/probata/AGENTS.md`.
 The owner-selected canonical path overrides earlier placement and proposed import paths.
 See `docs/RECONCILIATION-2026-09-13.md` for preservation and comparison evidence.
 
-# Legal-Workspace — Agent Orientation
+# Advocatio — the legal workdesk (legal workbench) — Agent Orientation
 
-> _Naming (D-138, 2026-09-05; applied 2026-09-06): this product is **advocatio** (formerly Legal-Workspace / Legal Workspace); the evidence platform it consumes is **Indicia Probata** / `probata` (formerly Agno-MCP-Platform). Directory: `probata/modules/advocatio/` (old name kept as a junction). GitHub repo name unchanged pending its own decision. Canon: `probata/docs/NAMING.md`. Historical text below is left verbatim; both names remain valid in recall stores (D-142)._
+<!-- Title corrected by Claude Code · Fable 5.1 · 2026-09-14 09:03 EDT (owner: "router is missing legal workbench work desk"). Was "Legal-Workspace — Agent Orientation". -->
+
+> _Naming (D-138, 2026-09-05; applied 2026-09-06): this product is **advocatio** (formerly Legal-Workspace / Legal Workspace); the evidence platform it consumes is **Indicia Probata** / `probata` (formerly Agno-MCP-Platform). ~~Directory: `probata/modules/advocatio/` (old name kept as a junction).~~ **Corrected 2026-09-14 (Claude Code · Fable 5.1): the directory is this repository, `E:\AI_Workspace\Projects\Propria\Legal-desktop`, per the owner routing decision of 2026-09-13 at the top of this file; the `probata/modules/advocatio-legal_workbench` location is retired.** GitHub repo name unchanged pending its own decision. Canon: `probata/docs/NAMING.md`. Historical text below is left verbatim; both names remain valid in recall stores (D-142)._
 
 
 > _Byline: Grok · grok-4.6 · 2026-08-18_

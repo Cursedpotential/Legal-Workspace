@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 import { ReleaseForm } from "@/components/ReleaseForm";
 import { legalApiBase } from "@/lib/api/client";
 
@@ -27,7 +28,7 @@ export default async function ReleasePage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a8476" }}>
+      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
         Final review copy
       </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
@@ -43,7 +44,7 @@ export default async function ReleasePage() {
       {releases.map((release) => (
         <article
           key={release.release_id}
-          style={{ borderTop: "1px solid #2a2e38", padding: "16px 0" }}
+          style={{ borderTop: "1px solid var(--border)", padding: "16px 0" }}
         >
           <strong>
             [{release.state}] {release.content_hash}
@@ -52,7 +53,7 @@ export default async function ReleasePage() {
             Assertions: {release.cited_assertion_ids.length} · filed=
             {String(release.filed)}
           </p>
-          <p style={{ color: "#8a8476" }}>
+          <p style={{ color: "var(--text-muted)" }}>
             omitted: {release.omitted_private.join(", ")}
           </p>
         </article>

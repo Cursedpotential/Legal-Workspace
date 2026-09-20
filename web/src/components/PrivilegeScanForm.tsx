@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 "use client";
 
 import { useState } from "react";
@@ -86,16 +87,16 @@ export function PrivilegeScanForm({
           style={{ display: "block", width: "100%", marginTop: 4 }}
         />
       </label>
-      {error ? <p style={{ color: "#c9a227" }}>{error}</p> : null}
+      {error ? <p style={{ color: "var(--status-warn)" }}>{error}</p> : null}
       <button type="submit" disabled={busy || (!text.trim() && !sectionId)}>
         {busy ? "Scanning…" : "Run keyword first-pass"}
       </button>
       {scan ? (
-        <article style={{ borderTop: "1px solid #2a2e38", padding: "16px 0" }}>
+        <article style={{ borderTop: "1px solid var(--border)", padding: "16px 0" }}>
           <strong>
             {scan.method} · {scan.source}
           </strong>
-          <p style={{ color: "#8a8476" }}>
+          <p style={{ color: "var(--text-muted)" }}>
             court_safe={String(scan.court_safe)} · legal_conclusion=
             {String(scan.legal_conclusion)}
           </p>

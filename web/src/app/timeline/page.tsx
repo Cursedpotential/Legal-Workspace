@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 import { DocketForm } from "@/components/DocketForm";
 import { EventDelete } from "@/components/EventDelete";
 import { legalApiBase } from "@/lib/api/client";
@@ -31,7 +32,7 @@ export default async function TimelinePage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a8476" }}>
+      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
         Timeline
       </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
@@ -43,7 +44,7 @@ export default async function TimelinePage() {
       </p>
       {error ? <p>{error}</p> : null}
       <DocketForm />
-      <div style={{ borderLeft: "2px solid #3a3f4b", paddingLeft: 20 }}>
+      <div style={{ borderLeft: "2px solid var(--border-bright)", paddingLeft: 20 }}>
         {past.map((item) => (
           <article key={item.event_id} style={{ marginBottom: 24, position: "relative" }}>
             <span
@@ -54,10 +55,10 @@ export default async function TimelinePage() {
                 width: 10,
                 height: 10,
                 borderRadius: "50%",
-                background: "#8a8476",
+                background: "var(--text-muted)",
               }}
             />
-            <p style={{ color: "#8a8476", margin: 0 }}>
+            <p style={{ color: "var(--text-muted)", margin: 0 }}>
               {new Date(item.occurs_at).toLocaleString("en-US", { timeZone: "America/New_York" })}
             </p>
             <strong>
@@ -73,7 +74,7 @@ export default async function TimelinePage() {
           style={{
             letterSpacing: "0.12em",
             textTransform: "uppercase",
-            color: "#c9a227",
+            color: "var(--status-warn)",
             margin: "8px 0 24px",
           }}
         >
@@ -90,10 +91,10 @@ export default async function TimelinePage() {
                 width: 10,
                 height: 10,
                 borderRadius: "50%",
-                background: "#c9a227",
+                background: "var(--status-warn)",
               }}
             />
-            <p style={{ color: "#8a8476", margin: 0 }}>
+            <p style={{ color: "var(--text-muted)", margin: 0 }}>
               {new Date(item.occurs_at).toLocaleString("en-US", { timeZone: "America/New_York" })}
             </p>
             <strong>

@@ -1,3 +1,4 @@
+// Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -68,7 +69,7 @@ export function ReleaseForm({
           {section.heading}
         </label>
       ))}
-      {error ? <p style={{ color: "#c9a227" }}>{error}</p> : null}
+      {error ? <p style={{ color: "var(--status-warn)" }}>{error}</p> : null}
       <button type="submit" disabled={busy || selected.length === 0}>
         {busy ? "Building…" : "Build final review copy"}
       </button>
