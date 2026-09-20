@@ -2,6 +2,11 @@
 
 Updated 2026-09-13. Start here when continuing with another model. The detailed research is already saved; retrieve the relevant report rather than repeating the inventory.
 
+Task A completed 2026-09-20 with three explicitly authorized cheaper parallel
+agents. Current verified repository: `E:\AI_Workspace\Projects\Propria\modules\Legal-desktop`.
+Use [the consolidated prompt](continuation/A-START.md), [completion receipt](continuation/A-receipt.md)
+and [383-row checklist](continuation/A-capability-port-map.csv) for that work.
+
 ## What we are building
 
 One legal-work module within the unified Propria surface, with a simpler phone/reference view using the same underlying sources. It brings together the complete Family Court Toolkit, legal references and skills, an MCP client with manual tool calls, case context and strategy, evidence-linked timelines, reviewed document creation and the multidisciplinary digital firm.
@@ -45,7 +50,7 @@ Each task is a single session-sized assignment. Use one task at a time. The firs
 
 | Task | State | Read only what is needed | Produce / completion test |
 |---|---|---|---|
-| A — Turn toolkit inventory into a port checklist | Ready | `inputs/stack/toolkit-capabilities.json`, toolkit report | `continuation/A-capability-port-map.csv`: every existing inventory row keeps its ID or origin key and gets a proposed shared-resource, method, callable-tool, code-adaptation or operational-support destination. Mark unknown route explicitly. Input/output coverage reconciles; no capability silently dropped. |
+| A — Turn toolkit inventory into a port checklist | Complete 2026-09-20; [383/383 verified](continuation/A-verification.json), [receipt](continuation/A-receipt.md) | `inputs/stack/toolkit-capabilities.json`, toolkit report | `continuation/A-capability-port-map.csv`: every existing inventory row keeps its ID or origin key and gets a proposed shared-resource, method, callable-tool, code-adaptation or operational-support destination. Mark unknown route explicitly. Input/output coverage reconciles; no capability silently dropped. |
 | B — Map reusable skills to actual work | Ready; independent of A | Additional-skill JSON/report, toolkit methods, Legal MCP prompt catalog; targeted skill files only | `continuation/B-method-map.csv`: drafting, review, source research, translation, strategy, exhibit and hearing/discovery method mappings, with version/path, output and executable-versus-guidance distinction. Identify overlap; preserve differing variants. |
 | C — Specify and test the MCP contract shape | Ready; reuse A if available | MCP client plan, `SPLIT.md`, current registered tool schemas and relevant handlers | `continuation/C-mcp-contract.yaml` plus synthetic examples for connection/discovery/manual call/result/error. Validate schema/fixture consistency. No registrations, credentials or external tool calls needed. |
 | D — Write support/proposal acceptance examples | Ready; independent of A–C | Requirements R16–R19 and R25–R29, current support/proposal findings | `continuation/D-review-fixtures.json`: synthetic examples for partial support, unrelated citation, conflicting evidence, uncertain date, unsupported translation addition and stale proposal. Each has an expected result and exact criterion. Parse and check fixture completeness. |
@@ -66,9 +71,9 @@ Suggested order for a week of smaller-model sessions: A, B, C, D, then E; F when
 
 ```text
 Continue Advocatio from this roadmap:
-E:\AI_Workspace\Projects\Propria\Legal-desktop\docs\planning\2026-09-13-advocatio-reconciliation\ROADMAP.md
+E:\AI_Workspace\Projects\Propria\modules\Legal-desktop\docs\planning\2026-09-13-advocatio-reconciliation\ROADMAP.md
 
-Canonical repository: E:\AI_Workspace\Projects\Propria\Legal-desktop.
+Canonical repository: E:\AI_Workspace\Projects\Propria\modules\Legal-desktop.
 Read the applicable AGENTS instructions and current dirty status. Start with the
 first unfinished Ready task A–E, or a task I explicitly name. Read only that
 task's linked inputs and the source passages needed to finish it. Existing
@@ -77,8 +82,10 @@ reports cover the initial research; do not repeat broad searches or audits.
 Complete one bounded task, verify its output, update its State cell in ROADMAP.md
 with the result link, and leave a short continuation/<task>-receipt.md containing:
 what changed, exact paths, verification, unresolved inputs and next ready task.
-Do not rewrite the entire plan. Do not spawn agents or paid provider calls unless
-I request them. For a blocker, record it once and finish useful independent work
+Do not rewrite the entire plan. Use cheaper capable agents for independent
+sections with explicit, non-overlapping file ownership; the coordinator merges
+and verifies shared outputs. This is explicitly authorized by the owner.
+For a blocker, record it once and finish useful independent work
 within the selected task; do not repeatedly retry or invent missing evidence.
 
 Preserve existing changes and original sources. No permanent deletion. No
@@ -93,4 +100,4 @@ completed and the exact next step.
 
 ## Current handoff state
 
-Planning and source reconciliation are complete for the reviewed scope. No application implementation milestone is marked complete by this roadmap. A–G have not been executed here. Start with **Task A** unless the owner selects another task. Nothing in this document schedules autonomous work or commits to a model's performance or cost.
+Planning and source reconciliation are complete for the reviewed scope. Task A is complete with 383 inventory entries mapped and verified; B–G remain pending. No application implementation milestone is marked complete by this roadmap. Start with **Task B** unless the owner selects another task. Nothing in this document schedules autonomous work or commits to a model's performance or cost.
