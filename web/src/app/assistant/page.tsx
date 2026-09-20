@@ -61,7 +61,7 @@ function ChatInner() {
     setPrompt("");
     setBusy(true);
     try {
-      const response = await fetch("/api/assistant", {
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -75,8 +75,12 @@ function ChatInner() {
           live,
         }),
       });
-      const body = (await response.json()) as { content?: string; error?: string };
+      const body = (await response.json().catch(() => null)) as { content?: string; error?: string } | null;
+      if (!response.ok) throw new Error(body?.error ?? `Assistant request failed (${response.status}).`);
+      if (!body) throw new Error("The assistant returned an unreadable response. Try again.");
       setLog([...next, { role: "assistant", content: body.content ?? body.error ?? "no output" }]);
+    } catch (exc) {
+      setLog([...next, { role: "assistant", content: exc instanceof Error ? exc.message : "The assistant is unavailable. Try again." }]);
     } finally {
       setBusy(false);
     }
