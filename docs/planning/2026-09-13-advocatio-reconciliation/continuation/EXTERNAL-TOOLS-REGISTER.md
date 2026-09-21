@@ -89,9 +89,15 @@ Verified live 2026-09-21 ~04:00 UTC against `https://legal.tilapia-skilift.ts.ne
 
 ## ContextForge registration (owner rule, 2026-09-20 23:07: "every single tool gets registered in ContextForge")
 
-Live ContextForge state 2026-09-21: 150 tools, all served through MCP gateways; none from `legal-api`; zero REST-type tools. The conversion route is **not yet registered**. Open owner decision — how workdesk tools are exposed:
+~~Live ContextForge state 2026-09-21: 150 tools, all served through MCP gateways; none from `legal-api`; zero REST-type tools. The conversion route is **not yet registered**. Open owner decision — how workdesk tools are exposed (A: one MCP face + one gateway; B: per-route REST tools).~~
 
-- **A (default):** give `legal-api` one MCP face (off-the-shelf FastAPI→MCP adapter) and register it as a single `advocatio` gateway, the same way every existing tool arrives. Each new tool then registers itself.
-- **B:** register each HTTP route as a ContextForge REST tool. Needs a service credential for ContextForge → `legal-api`, and file-upload routes need a JSON variant.
+**Decided and done 2026-09-21 01:40 EDT — owner chose A.** Verified live (commit `fd48682`):
 
-Either way `legal-api` needs an auth lane for ContextForge; today it accepts only tailnet-direct, signed-bridge or Authentik callers.
+- `legal-api` serves an MCP endpoint at `/mcp/` (`api/legal_workspace/api/mcp_face.py`, fastmcp 4, stateless JSON) behind the same auth middleware as the HTTP API.
+- New auth lane: bearer `LEGAL_MCP_GATEWAY_TOKEN` (off when unset; value in `~/.secrets/legal-workspace.env` and the Coolify app env, never in git).
+- ContextForge gateway `advocatio` → `http://legal-api:8010/mcp/` (service name over the `probata` network), team visibility, status active, reachable.
+- Tool `advocatio-convert-office-document-to-pdf` listed in ContextForge and called **through ContextForge's own `/mcp`** with a synthetic DOCX: LibreOffice PDF returned, stored file's sha256 matched the tool result; probe files removed.
+- fastapi-mcp was tried first and dropped: no release since 2025-07, breaks on mcp 2.x, and recurses forever on the self-referential issue-tree schema.
+- Observed: LibreOffice PDFs are **not byte-deterministic** (same DOCX → different sha256 each run; embedded timestamps). DOC-02 asks for deterministic rendering — open item.
+
+**How every later tool gets registered:** add a `@mcp.tool` function in `mcp_face.py` over the service; after deploy, ContextForge picks it up on gateway refresh. No per-tool registration step.
