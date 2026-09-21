@@ -144,3 +144,12 @@ extensions and `extractors.py` says "OCR is intentionally deferred". Intake's ow
 Two steps: (1) an OCR branch in Intake's extractor so screenshots become indexable text in Weaviate, kept apart from
 native-export text; (2) an index run over the screenshots in B2 — a billable, long job that needs the owner's go
 with counts from the catalog first.
+
+**Scope from the catalog (read-only `catalog_reconcile.occurrences`, 2026-09-21 ~06:40 UTC):** 677,730 image
+occurrence rows, 416.0 GB (jpg 388,657 · png 202,290 · heic 33,231 · gif 24,325 · jpeg 16,085 · webp 13,074).
+Rows whose path names a screenshot: 26,208 (17.2 GB) → **14,948 unique files by hash, 9.04 GB**, plus 758 rows with
+no hash. Sources: D-Backup 11,430 · OneDrive 10,532 · F-Disk-Drill 2,673 · gdrive/salemnet 1,118 · F-case 455.
+Every one of those rows carries a `recorded_modtime` and `source_metadata` in the catalog — a further original-time
+candidate for files like `IMG_####.PNG` that carry none themselves (lower confidence: the restore re-stamped batches).
+Screenshots not named as such are not in this count.
+
