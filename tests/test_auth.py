@@ -159,6 +159,22 @@ def test_signed_bff_request_verifies_percent_encoded_colon_route(secure_auth) ->
     assert response.status_code != 401
 
 
+def test_mcp_gateway_token_lane(secure_auth, monkeypatch: pytest.MonkeyPatch) -> None:
+    token = "gateway-" + "k" * 40
+    monkeypatch.setenv("LEGAL_MCP_GATEWAY_TOKEN", token)
+    accepted = TestClient(app).get("/v1/auth/whoami", headers={"authorization": f"Bearer {token}"})
+    assert accepted.status_code == 200
+    assert accepted.json()["source"] == "mcp-gateway"
+    denied = TestClient(app).get("/v1/auth/whoami", headers={"authorization": "Bearer " + "x" * 48})
+    assert denied.status_code == 401
+
+
+def test_short_mcp_gateway_token_leaves_the_lane_off(secure_auth, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("LEGAL_MCP_GATEWAY_TOKEN", "short")
+    response = TestClient(app).get("/v1/auth/whoami", headers={"authorization": "Bearer short"})
+    assert response.status_code == 401
+
+
 def test_invalid_bff_signature_is_denied(secure_auth) -> None:
     headers = _signed_bff_headers("GET", "/v1/auth/whoami")
     headers["x-legal-bff-signature"] = "0" * 64

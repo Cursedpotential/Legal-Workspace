@@ -153,6 +153,14 @@ def _bearer_token(authorization: str | None) -> str | None:
     return credentials.strip()
 
 
+def _is_mcp_gateway_token(token: str, settings: Settings) -> bool:
+    """Service credential ContextForge presents to the /mcp face. Off when unset."""
+    secret = settings.mcp_gateway_token
+    if len(secret.encode()) < 32:
+        return False
+    return hmac.compare_digest(token.encode(), secret.encode())
+
+
 def _canonical_bff_message(request: Request, timestamp: str, nonce: str, body: bytes) -> bytes:
     # Sign the path as sent on the wire: the web bridge percent-encodes each
     # segment (":" becomes "%3A"), and request.url.path is already decoded, so
@@ -235,6 +243,15 @@ class LegalWorkspaceAuthMiddleware(BaseHTTPMiddleware):
             token = _bearer_token(request.headers.get("authorization"))
             if token is None:
                 raise AuthenticationDenied("authentication required")
+            if _is_mcp_gateway_token(token, settings):
+                request.state.auth = AuthenticatedPrincipal(
+                    subject="contextforge-gateway",
+                    username=None,
+                    email=None,
+                    groups=(),
+                    source="mcp-gateway",
+                )
+                return await call_next(request)
             request.state.auth = AuthentikTokenVerifier(settings).verify(token)
             return await call_next(request)
         except AuthenticationUnavailable as exc:

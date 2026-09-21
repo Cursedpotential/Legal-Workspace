@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     authentik_jwks_url: str = Field(default="", alias="AUTHENTIK_JWKS_URL")
     authentik_allowed_groups: str = Field(default="", alias="AUTHENTIK_ALLOWED_GROUPS")
     legal_bff_signing_secret: str = Field(default="", alias="LEGAL_BFF_SIGNING_SECRET")
+    mcp_gateway_token: str = Field(default="", alias="LEGAL_MCP_GATEWAY_TOKEN")
     tailnet_owner_access: bool = Field(default=True, alias="LEGAL_TAILNET_OWNER_ACCESS")
     auth_clock_skew_seconds: int = Field(default=30, alias="LEGAL_AUTH_CLOCK_SKEW_SECONDS")
     # Consignatio catalog (read-only). Empty URL = evidence desk reports "not configured".

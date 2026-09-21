@@ -13,8 +13,11 @@ from uuid import UUID
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel
 
+from fastmcp.utilities.lifespan import combine_lifespans
+
 from legal_workspace import __version__
 from legal_workspace.api.auth import AuthenticatedPrincipal, LegalWorkspaceAuthMiddleware
+from legal_workspace.api.mcp_face import mcp_app
 from legal_workspace.config import get_settings
 from legal_workspace.contracts.citations import AuthorityCitation, EvidenceCitation
 from legal_workspace.contracts.events import EventEnvelope
@@ -91,7 +94,7 @@ app = FastAPI(
     title="Legal Workspace API",
     version=__version__,
     description="Legal practice sibling of the Evidence Platform. Not a second evidence store.",
-    lifespan=_lifespan,
+    lifespan=combine_lifespans(_lifespan, mcp_app.lifespan),
 )
 app.add_middleware(LegalWorkspaceAuthMiddleware)
 
@@ -831,3 +834,6 @@ app.include_router(privilege_router)
 app.include_router(factor_router)
 app.include_router(routing_router)
 app.include_router(evidence_catalog_router)
+
+# MCP face: one `advocatio` gateway for ContextForge (see api/mcp_face.py).
+app.mount("/mcp", mcp_app)

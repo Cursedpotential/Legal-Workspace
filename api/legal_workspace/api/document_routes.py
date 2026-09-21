@@ -26,7 +26,6 @@ from legal_workspace.services.workspace import WORKSPACE
 
 router = APIRouter()
 
-
 def _renders_dir() -> Path:
     folder = WORKSPACE.store_dir / "renders"
     folder.mkdir(parents=True, exist_ok=True)
@@ -37,25 +36,23 @@ def _renders_dir() -> Path:
 async def convert_owner_document(file: Annotated[UploadFile, File()]) -> RenderResult:
     """LibreOffice conversion of an owner-produced office file to PDF."""
     try:
-        name = safe_document_name(file.filename or "")
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    # Refuse before anything touches disk.
-    if Path(name).suffix.lower() not in OFFICE_SUFFIXES:
-        raise HTTPException(
-            status_code=400,
-            detail=f"unsupported office format: {Path(name).suffix or '(none)'}",
-        )
-    folder = _renders_dir()
-    src = folder / name
-    dest = folder / f"{Path(name).stem}.pdf"
-    src.write_bytes(await file.read())
-    try:
-        return convert_office_to_pdf(src, dest)
+        return convert_document_bytes(file.filename or "", await file.read())
     except RendererUnavailable as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+def convert_document_bytes(filename: str, data: bytes) -> RenderResult:
+    """Store an office upload under renders/ and convert it. Raises ValueError / RendererUnavailable."""
+    name = safe_document_name(filename)
+    # Refuse before anything touches disk.
+    if Path(name).suffix.lower() not in OFFICE_SUFFIXES:
+        raise ValueError(f"unsupported office format: {Path(name).suffix or '(none)'}")
+    folder = _renders_dir()
+    src = folder / name
+    src.write_bytes(data)
+    return convert_office_to_pdf(src, folder / f"{Path(name).stem}.pdf")
 
 
 @router.get("/v1/documents/renders/{name}")
