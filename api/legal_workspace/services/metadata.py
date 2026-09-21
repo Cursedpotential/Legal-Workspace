@@ -1,42 +1,47 @@
-"""PDF metadata: read with exiftool (inside the legal-renderer sidecar), scrub with pikepdf.
+"""File metadata: read anything with exiftool, scrub PDFs with pikepdf.
 
 > _Byline: Claude Code · Fable 5.1 · 2026-09-21_
-CAT5 section E / DOC-10. Owner-produced work product only; never an evidence
-original. A scrub writes a new file and reports what was there before and what
-exiftool still sees afterwards. Not court-safe.
+CAT5 section E / DOC-10. exiftool is installed in the legal-api image and reads
+images (EXIF, GPS, maker notes, XMP edit history), video, audio, office files
+and PDFs. Reading never changes the file. A scrub writes a new PDF copy and
+reports what exiftool still sees afterwards; it is never for an evidence
+original. Not court-safe.
 """
 
 from __future__ import annotations
 
 import hashlib
+import json
+import shutil
+import subprocess
 from pathlib import Path
 
-import httpx
 from pydantic import BaseModel
 
-from legal_workspace.config import get_settings
-from legal_workspace.services.renderer import RendererUnavailable
+# exiftool groups that describe the file on disk or the tool run, not the content's own metadata.
+_STRUCTURAL_GROUPS = frozenset({"ExifTool", "System", "File"})
+_STRUCTURAL_PDF = frozenset({"PDF:PDFVersion", "PDF:Linearized", "PDF:PageCount"})
 
-# exiftool fields that describe the file/container, not authored metadata.
-_STRUCTURAL = frozenset(
-    {
-        "SourceFile",
-        "ExifToolVersion",
-        "FileName",
-        "Directory",
-        "FileSize",
-        "FileModifyDate",
-        "FileAccessDate",
-        "FileInodeChangeDate",
-        "FilePermissions",
-        "FileType",
-        "FileTypeExtension",
-        "MIMEType",
-        "PDFVersion",
-        "Linearized",
-        "PageCount",
-    }
-)
+# What an image/video reviewer looks at first, keyed by the tag name after the group.
+_SUMMARY_TAGS = {
+    "captured": ("DateTimeOriginal", "CreateDate", "MediaCreateDate", "CreationDate"),
+    "captured_offset": ("OffsetTimeOriginal", "OffsetTime"),
+    "modified": ("ModifyDate", "MetadataDate", "MediaModifyDate"),
+    "device_make": ("Make",),
+    "device_model": ("Model",),
+    "software": ("Software", "CreatorTool", "HistorySoftwareAgent", "Producer"),
+    "gps_latitude": ("GPSLatitude",),
+    "gps_longitude": ("GPSLongitude",),
+    "gps_timestamp": ("GPSDateTime", "GPSDateStamp"),
+    "width": ("ImageWidth", "ExifImageWidth"),
+    "height": ("ImageHeight", "ExifImageHeight"),
+    "duration": ("Duration",),
+    "author": ("Author", "Artist", "Creator", "By-line"),
+}
+
+
+class ExiftoolUnavailable(RuntimeError):
+    """The exiftool binary is not installed where legal-api runs."""
 
 
 class MetadataReport(BaseModel):
@@ -44,6 +49,11 @@ class MetadataReport(BaseModel):
     engine: str
     source_name: str
     content_hash: str
+    size_bytes: int
+    file_type: str | None
+    mime_type: str | None
+    summary: dict[str, object]
+    has_gps: bool
     metadata: dict[str, object]
     authored_fields: list[str]
     court_safe: bool = False
@@ -61,30 +71,66 @@ class MetadataScrubResult(BaseModel):
     exportable: bool = False
 
 
-def read_pdf_metadata(src: Path, *, base_url: str | None = None) -> MetadataReport:
-    """Every metadata field exiftool reports for `src` (a PDF)."""
-    if src.suffix.lower() != ".pdf":
-        raise ValueError("metadata read takes a PDF")
-    url = (base_url or get_settings().legal_renderer_base_url).rstrip("/")
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _summary(fields: dict[str, object]) -> dict[str, object]:
+    by_tag: dict[str, object] = {}
+    for key, value in fields.items():
+        by_tag.setdefault(key.split(":", 1)[-1], value)
+    out: dict[str, object] = {}
+    for label, tags in _SUMMARY_TAGS.items():
+        for tag in tags:
+            if tag in by_tag:
+                out[label] = by_tag[tag]
+                break
+    return out
+
+
+def read_file_metadata(src: Path) -> MetadataReport:
+    """Every metadata field exiftool reports for `src`, grouped (`EXIF:`, `GPS:`, `XMP-…:`)."""
+    binary = shutil.which("exiftool")
+    if binary is None:
+        raise ExiftoolUnavailable("exiftool is not installed on this host")
     try:
-        with src.open("rb") as handle, httpx.Client(timeout=120.0) as client:
-            response = client.post(
-                f"{url}/forms/pdfengines/metadata/read", files={"files": (src.name, handle)}
-            )
-    except httpx.HTTPError as exc:
-        raise RendererUnavailable(f"legal-renderer unreachable: {exc}") from exc
-    if response.status_code != 200:
-        raise ValueError(
-            f"legal-renderer rejected {src.name}: {response.status_code} {response.text[:200]}"
+        done = subprocess.run(  # fixed argv, no shell
+            [binary, "-json", "-G1", "-a", "-struct", "-c", "%+.6f",
+             "-api", "largefilesupport=1", str(src)],
+            capture_output=True,
+            timeout=120,
+            check=False,
         )
-    fields = dict(response.json().get(src.name) or {})
+    except subprocess.TimeoutExpired as exc:
+        raise ValueError(f"exiftool timed out on {src.name}") from exc
+    try:
+        fields = dict(json.loads(done.stdout.decode("utf-8", "replace"))[0])
+    except (ValueError, IndexError) as exc:
+        detail = done.stderr.decode("utf-8", "replace").strip()[:200]
+        raise ValueError(f"exiftool could not read {src.name}: {detail}") from exc
+    fields.pop("SourceFile", None)
+    authored = sorted(
+        key
+        for key in fields
+        if key.split(":", 1)[0] not in _STRUCTURAL_GROUPS and key not in _STRUCTURAL_PDF
+    )
+    summary = _summary(fields)
     return MetadataReport(
         ok=True,
-        engine="exiftool/gotenberg",
+        engine=f"exiftool {fields.get('ExifTool:ExifToolVersion', '')}".strip(),
         source_name=src.name,
-        content_hash=hashlib.sha256(src.read_bytes()).hexdigest(),
+        content_hash=_sha256(src),
+        size_bytes=src.stat().st_size,
+        file_type=fields.get("File:FileType"),
+        mime_type=fields.get("File:MIMEType"),
+        summary=summary,
+        has_gps="gps_latitude" in summary and "gps_longitude" in summary,
         metadata=fields,
-        authored_fields=sorted(k for k in fields if k not in _STRUCTURAL),
+        authored_fields=authored,
     )
 
 
@@ -92,7 +138,7 @@ def scrub_pdf_metadata(src: Path, dest: Path) -> MetadataScrubResult:
     """Write a copy of `src` with the document-info dictionary and XMP packet removed."""
     from pikepdf import Pdf
 
-    before = read_pdf_metadata(src)
+    before = read_file_metadata(src)
     with Pdf.open(src) as pdf:
         if "/Info" in pdf.trailer:
             del pdf.trailer["/Info"]
@@ -101,7 +147,7 @@ def scrub_pdf_metadata(src: Path, dest: Path) -> MetadataScrubResult:
         dest.parent.mkdir(parents=True, exist_ok=True)
         # A fresh, non-incremental save drops the unreferenced old objects too.
         pdf.save(dest, deterministic_id=True)
-    after = read_pdf_metadata(dest)
+    after = read_file_metadata(dest)
     return MetadataScrubResult(
         ok=True,
         source_name=src.name,

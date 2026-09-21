@@ -17,9 +17,10 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
 from legal_workspace.services.metadata import (
+    ExiftoolUnavailable,
     MetadataReport,
     MetadataScrubResult,
-    read_pdf_metadata,
+    read_file_metadata,
     scrub_pdf_metadata,
 )
 from legal_workspace.services.renderer import (
@@ -70,12 +71,12 @@ def _checked_pdf_name(filename: str, data: bytes) -> str:
 
 
 def read_metadata_bytes(filename: str, data: bytes) -> MetadataReport:
-    """exiftool report for an owner-produced PDF. The upload lives only in a temp folder."""
-    name = _checked_pdf_name(filename, data)
+    """exiftool report for any file (image, video, audio, office, PDF). Temp folder only."""
+    name = safe_document_name(filename)
     with tempfile.TemporaryDirectory() as work:
         src = Path(work) / name
         src.write_bytes(data)
-        return read_pdf_metadata(src)
+        return read_file_metadata(src)
 
 
 def scrub_metadata_bytes(filename: str, data: bytes) -> MetadataScrubResult:
@@ -88,10 +89,17 @@ def scrub_metadata_bytes(filename: str, data: bytes) -> MetadataScrubResult:
 
 
 @router.post("/v1/documents:metadata", response_model=MetadataReport)
-async def read_owner_pdf_metadata(file: Annotated[UploadFile, File()]) -> MetadataReport:
+async def read_owner_file_metadata(file: Annotated[UploadFile, File()]) -> MetadataReport:
+    """exiftool report for any uploaded file. Streamed to a temp folder, never kept, never changed."""
     try:
-        return read_metadata_bytes(file.filename or "", await file.read())
-    except RendererUnavailable as exc:
+        name = safe_document_name(file.filename or "")
+        with tempfile.TemporaryDirectory() as work:
+            src = Path(work) / name
+            with src.open("wb") as handle:
+                while block := await file.read(1024 * 1024):
+                    handle.write(block)
+            return read_file_metadata(src)
+    except ExiftoolUnavailable as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -101,7 +109,7 @@ async def read_owner_pdf_metadata(file: Annotated[UploadFile, File()]) -> Metada
 async def scrub_owner_pdf_metadata(file: Annotated[UploadFile, File()]) -> MetadataScrubResult:
     try:
         return scrub_metadata_bytes(file.filename or "", await file.read())
-    except RendererUnavailable as exc:
+    except ExiftoolUnavailable as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

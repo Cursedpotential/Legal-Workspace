@@ -1,5 +1,10 @@
 # Byline: Grok · grok-4.6 · 2026-08-18
+# exiftool added 2026-09-21 (Claude Code · Fable 5.1): metadata for images, video,
+# audio, office files and PDFs (CAT5 section E / DOC-10).
 FROM python:3.12-slim
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libimage-exiftool-perl \
+    && apt-get clean
 WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY api ./api

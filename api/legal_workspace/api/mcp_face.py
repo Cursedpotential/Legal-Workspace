@@ -49,10 +49,12 @@ def convert_office_document_to_pdf(filename: str, content_base64: str) -> dict:
 
 
 @mcp.tool
-def read_pdf_metadata(filename: str, content_base64: str) -> dict:
-    """Report every metadata field exiftool finds in an owner-produced PDF (author, creator tool,
-    dates, XMP). `authored_fields` lists the ones that identify who or what made the file.
-    The upload is not kept.
+def read_file_metadata(filename: str, content_base64: str) -> dict:
+    """Read every metadata field exiftool finds in a file: photos and screenshots (EXIF capture time,
+    GPS, device make/model, editing software, XMP edit history), video, audio, office files, PDFs.
+    `summary` holds the fields a reviewer checks first; `has_gps` flags location data;
+    `metadata` is the full grouped dump. The file is never changed and the upload is not kept.
+    Files over 25 MiB go to POST /v1/documents:metadata instead.
     """
     return read_metadata_bytes(filename, _decode(content_base64)).model_dump()
 
