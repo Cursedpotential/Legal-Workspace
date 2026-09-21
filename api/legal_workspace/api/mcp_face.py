@@ -17,6 +17,7 @@ from fastmcp import FastMCP
 
 from legal_workspace.api.document_routes import (
     convert_document_bytes,
+    ocr_image_bytes,
     read_metadata_bytes,
     scrub_metadata_bytes,
 )
@@ -66,6 +67,20 @@ def scrub_pdf_metadata(filename: str, content_base64: str) -> dict:
     removed and any authored fields still present. Never use on an evidence original.
     """
     return scrub_metadata_bytes(filename, _decode(content_base64)).model_dump()
+
+
+@mcp.tool
+def ocr_image(
+    filename: str, content_base64: str, language: str = "eng", layout: str = "auto"
+) -> dict:
+    """Read the text in a screenshot or photographed document with Tesseract OCR (PNG, JPG, WEBP,
+    TIFF, BMP, GIF). Returns the full text, each line with its confidence and pixel box, word count
+    and mean confidence. `layout`: "auto", "block" (one column, e.g. a message thread), or "sparse"
+    (scattered UI text). OCR text is a machine-read derivative, never equal to a native export.
+    """
+    return ocr_image_bytes(
+        filename, _decode(content_base64), language=language, layout=layout
+    ).model_dump()
 
 
 mcp_app = mcp.http_app(path="/", stateless_http=True, json_response=True)

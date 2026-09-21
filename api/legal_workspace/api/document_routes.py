@@ -13,7 +13,7 @@ import tempfile
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
 from legal_workspace.services.metadata import (
@@ -23,6 +23,7 @@ from legal_workspace.services.metadata import (
     read_file_metadata,
     scrub_pdf_metadata,
 )
+from legal_workspace.services.ocr import OcrResult, OcrUnavailable, ocr_image
 from legal_workspace.services.renderer import (
     OFFICE_SUFFIXES,
     RendererUnavailable,
@@ -110,6 +111,33 @@ async def scrub_owner_pdf_metadata(file: Annotated[UploadFile, File()]) -> Metad
     try:
         return scrub_metadata_bytes(file.filename or "", await file.read())
     except ExiftoolUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+def ocr_image_bytes(
+    filename: str, data: bytes, *, language: str = "eng", layout: str = "auto"
+) -> OcrResult:
+    """Tesseract OCR of a screenshot or photographed document. Temp folder only."""
+    name = safe_document_name(filename)
+    with tempfile.TemporaryDirectory() as work:
+        src = Path(work) / name
+        src.write_bytes(data)
+        return ocr_image(src, language=language, layout=layout)
+
+
+@router.post("/v1/documents:ocr", response_model=OcrResult)
+async def ocr_owner_image(
+    file: Annotated[UploadFile, File()],
+    language: Annotated[str, Form()] = "eng",
+    layout: Annotated[str, Form()] = "auto",
+) -> OcrResult:
+    try:
+        return ocr_image_bytes(
+            file.filename or "", await file.read(), language=language, layout=layout
+        )
+    except OcrUnavailable as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
