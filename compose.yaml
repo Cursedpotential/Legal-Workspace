@@ -55,6 +55,12 @@ services:
       AUTHENTIK_ALLOWED_GROUPS: ${AUTHENTIK_ALLOWED_GROUPS:-}
       LEGAL_BFF_SIGNING_SECRET: ${LEGAL_BFF_SIGNING_SECRET}
       CF_GATEWAY_TOKEN: ${CF_GATEWAY_TOKEN:-}
+      # Evidence desk: read-only Consignatio catalog + signed B2 links (empty = desk reports "not configured")
+      CONSIGNATIO_CATALOG_URL: ${CONSIGNATIO_CATALOG_URL:-}
+      B2_KEY_ID: ${B2_KEY_ID:-}
+      B2_APPLICATION_KEY: ${B2_APPLICATION_KEY:-}
+      B2_S3_ENDPOINT: ${B2_S3_ENDPOINT:-}
+      B2_REGION: ${B2_REGION:-}
     volumes:
       - /var/lib/legal-workspace/workspace:/data/workspace
     healthcheck:
