@@ -40,7 +40,7 @@ Tailscale service names (never IPs):
 | `legal-web` | Next |
 | `legal-api` | FastAPI |
 | `legal-postgres` | existing PG, new role |
-| `legal-renderer` | later |
+| `legal-renderer` | ~~later~~ **live 2026-09-21** (Gotenberg 8.37.0 in `compose.yaml`, no published port; Claude Code · Fable 5.1) |
 | `legal-agents` | later |
 | `evidence-platform` | Agno |
 | `model-gateway` | Portkey |
@@ -69,7 +69,7 @@ service name once Coolify wiring exists.
 |---|---|---|
 | legal-api | `deploy/Dockerfile.api` + root `compose.yaml` service | health `GET /health` |
 | legal-web | `deploy/Dockerfile.web` | `output: "standalone"` |
-| (later) legal-renderer | not created | LibreOffice headless |
+| ~~(later)~~ legal-renderer | ~~not created~~ **running since 2026-09-21** as a service of the `legal-workspace` Coolify app | LibreOffice headless behind Gotenberg |
 
 Coolify 4.1.2: create via `POST /applications/private-github-app` with
 `github_app_uuid`. Env bulk = `PATCH .../envs/bulk` body `{"data":[...]}`.
