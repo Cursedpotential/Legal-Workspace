@@ -153,3 +153,16 @@ Every one of those rows carries a `recorded_modtime` and `source_metadata` in th
 candidate for files like `IMG_####.PNG` that carry none themselves (lower confidence: the restore re-stamped batches).
 Screenshots not named as such are not in this count.
 
+## Receipt — buttons (2026-09-21 ~10:00 UTC, commit `6c937bd`)
+
+Owner order 05:52 EDT. Sidebar → Contracts → **File tools** (`/file-tools`, `web/src/components/FileTools.tsx`):
+Read metadata · Put images in time order · Read text (OCR, with layout choice) · Convert to PDF · Remove PDF metadata.
+Takeout `.json` sidecars picked beside an image are paired and sent as an original-time source. Checked in a real
+browser on the live site with three synthetic screenshots: time-order put them in the right order and flagged the
+one with no recoverable time; OCR returned each one's text word for word; no console errors. Convert and Remove
+buttons were not clicked in the browser (their routes were verified earlier the same night). Still without
+buttons: Bates stamp and redaction (older routes; their outputs have no download route yet).
+
+The Intake image-index design that follows from the owner's 05:52 direction (Weaviate MaxSim + SurrealDB, hosted
+embedder, Tesseract fallback) lives in `Consignatio/Intake/docs/PROPOSAL-2026-09-21-IMAGE-INDEX.md`.
+
