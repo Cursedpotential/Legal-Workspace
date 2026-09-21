@@ -50,14 +50,61 @@ def convert_office_document_to_pdf(filename: str, content_base64: str) -> dict:
 
 
 @mcp.tool
-def read_file_metadata(filename: str, content_base64: str) -> dict:
+def read_file_metadata(
+    filename: str, content_base64: str, takeout_sidecar_json: str | None = None
+) -> dict:
     """Read every metadata field exiftool finds in a file: photos and screenshots (EXIF capture time,
-    GPS, device make/model, editing software, XMP edit history), video, audio, office files, PDFs.
-    `summary` holds the fields a reviewer checks first; `has_gps` flags location data;
-    `metadata` is the full grouped dump. The file is never changed and the upload is not kept.
+    GPS, phone/camera make, model and serial, editing software, XMP edit history), video, audio,
+    office files, PDFs. `original_time` resolves when the image was originally captured and names its
+    source (EXIF, Takeout sidecar, embedded creation time, or the device-generated filename), with
+    every candidate listed and a conflict flag when they disagree. Pass the ORIGINAL filename: names
+    like Screenshot_20240312-141502.png carry the capture time. `takeout_sidecar_json` is the text of
+    a Google Takeout `<image>.json` sidecar if one exists. The file is never changed or kept.
     Files over 25 MiB go to POST /v1/documents:metadata instead.
     """
-    return read_metadata_bytes(filename, _decode(content_base64)).model_dump()
+    return read_metadata_bytes(
+        filename, _decode(content_base64), takeout_sidecar_json=takeout_sidecar_json
+    ).model_dump()
+
+
+@mcp.tool
+def order_images_by_original_time(images: list[dict]) -> dict:
+    """Put a series of screenshots or photos in chronological order by original capture time.
+    `images` is a list of {"filename", "content_base64", optional "takeout_sidecar_json"}; use the
+    original filenames. Returns `ordered` (earliest first: filename, sha256, resolved time, source,
+    confidence, conflict flag, device) and `unresolved` for files with no recoverable time. Times
+    without a timezone are device-local wall-clock; mixing them with UTC values is flagged.
+    """
+    rows = []
+    for item in images:
+        report = read_metadata_bytes(
+            item["filename"],
+            _decode(item["content_base64"]),
+            takeout_sidecar_json=item.get("takeout_sidecar_json"),
+        )
+        device = " ".join(
+            str(report.summary[key]) for key in ("device_make", "device_model") if key in report.summary
+        )
+        rows.append(
+            {
+                "filename": item["filename"],
+                "content_hash": report.content_hash,
+                "original_time": report.original_time.value,
+                "source": report.original_time.source,
+                "confidence": report.original_time.confidence,
+                "timezone_known": report.original_time.timezone_known,
+                "conflict": report.original_time.conflict,
+                "device": device or None,
+            }
+        )
+    resolved = sorted(
+        (row for row in rows if row["original_time"]), key=lambda row: row["original_time"][:19]
+    )
+    return {
+        "ordered": resolved,
+        "unresolved": [row for row in rows if not row["original_time"]],
+        "mixed_timezone_basis": len({row["timezone_known"] for row in resolved}) > 1,
+    }
 
 
 @mcp.tool

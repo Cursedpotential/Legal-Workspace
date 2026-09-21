@@ -18,6 +18,8 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from legal_workspace.services.original_time import OriginalTime, resolve_original_time
+
 # exiftool groups that describe the file on disk or the tool run, not the content's own metadata.
 _STRUCTURAL_GROUPS = frozenset({"ExifTool", "System", "File"})
 _STRUCTURAL_PDF = frozenset({"PDF:PDFVersion", "PDF:Linearized", "PDF:PageCount"})
@@ -29,6 +31,11 @@ _SUMMARY_TAGS = {
     "modified": ("ModifyDate", "MetadataDate", "MediaModifyDate"),
     "device_make": ("Make",),
     "device_model": ("Model",),
+    "device_serial": ("BodySerialNumber", "SerialNumber", "InternalSerialNumber"),
+    "lens": ("LensModel", "LensID"),
+    "host_computer": ("HostComputer",),
+    "image_unique_id": ("ImageUniqueID", "DocumentID", "OriginalDocumentID"),
+    "user_comment": ("UserComment",),
     "software": ("Software", "CreatorTool", "HistorySoftwareAgent", "Producer"),
     "gps_latitude": ("GPSLatitude",),
     "gps_longitude": ("GPSLongitude",),
@@ -53,6 +60,7 @@ class MetadataReport(BaseModel):
     file_type: str | None
     mime_type: str | None
     summary: dict[str, object]
+    original_time: OriginalTime
     has_gps: bool
     metadata: dict[str, object]
     authored_fields: list[str]
@@ -88,6 +96,11 @@ def _summary(fields: dict[str, object]) -> dict[str, object]:
     for key, value in fields.items():
         if key.startswith("Composite:GPS"):
             by_tag[key.split(":", 1)[-1]] = value
+    for tag in ("GPSLatitude", "GPSLongitude"):
+        try:
+            by_tag[tag] = float(str(by_tag[tag]))
+        except (KeyError, ValueError):
+            pass
     out: dict[str, object] = {}
     for label, tags in _SUMMARY_TAGS.items():
         for tag in tags:
@@ -97,7 +110,7 @@ def _summary(fields: dict[str, object]) -> dict[str, object]:
     return out
 
 
-def read_file_metadata(src: Path) -> MetadataReport:
+def read_file_metadata(src: Path, *, takeout_sidecar_json: str | None = None) -> MetadataReport:
     """Every metadata field exiftool reports for `src`, grouped (`EXIF:`, `GPS:`, `XMP-…:`)."""
     binary = shutil.which("exiftool")
     if binary is None:
@@ -133,6 +146,7 @@ def read_file_metadata(src: Path) -> MetadataReport:
         file_type=fields.get("File:FileType"),
         mime_type=fields.get("File:MIMEType"),
         summary=summary,
+        original_time=resolve_original_time(fields, src.name, takeout_sidecar_json),
         has_gps="gps_latitude" in summary and "gps_longitude" in summary,
         metadata=fields,
         authored_fields=authored,

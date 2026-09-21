@@ -71,13 +71,15 @@ def _checked_pdf_name(filename: str, data: bytes) -> str:
     return name
 
 
-def read_metadata_bytes(filename: str, data: bytes) -> MetadataReport:
+def read_metadata_bytes(
+    filename: str, data: bytes, *, takeout_sidecar_json: str | None = None
+) -> MetadataReport:
     """exiftool report for any file (image, video, audio, office, PDF). Temp folder only."""
     name = safe_document_name(filename)
     with tempfile.TemporaryDirectory() as work:
         src = Path(work) / name
         src.write_bytes(data)
-        return read_file_metadata(src)
+        return read_file_metadata(src, takeout_sidecar_json=takeout_sidecar_json)
 
 
 def scrub_metadata_bytes(filename: str, data: bytes) -> MetadataScrubResult:
@@ -90,7 +92,10 @@ def scrub_metadata_bytes(filename: str, data: bytes) -> MetadataScrubResult:
 
 
 @router.post("/v1/documents:metadata", response_model=MetadataReport)
-async def read_owner_file_metadata(file: Annotated[UploadFile, File()]) -> MetadataReport:
+async def read_owner_file_metadata(
+    file: Annotated[UploadFile, File()],
+    takeout_sidecar_json: Annotated[str | None, Form()] = None,
+) -> MetadataReport:
     """exiftool report for any uploaded file. Streamed to a temp folder, never kept, never changed."""
     try:
         name = safe_document_name(file.filename or "")
@@ -99,7 +104,7 @@ async def read_owner_file_metadata(file: Annotated[UploadFile, File()]) -> Metad
             with src.open("wb") as handle:
                 while block := await file.read(1024 * 1024):
                     handle.write(block)
-            return read_file_metadata(src)
+            return read_file_metadata(src, takeout_sidecar_json=takeout_sidecar_json or None)
     except ExiftoolUnavailable as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except ValueError as exc:
