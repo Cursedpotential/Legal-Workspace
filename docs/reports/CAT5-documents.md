@@ -25,7 +25,10 @@ so DevTools/F1 can see them. Collabora CODE / OnlyOffice and the
 LibreOffice `legal-renderer` sidecar remain the **second** surface
 when Type 1 Docker is available — a WOPI iframe is often cross-origin,
 so DevTools on the parent tab will not read the document canvas.
-That sidecar is still HOLD. Do not skip it; do not run it on this
+~~That sidecar is still HOLD.~~ **Corrected 2026-09-21 (Claude Code · Fable 5.1): the
+LibreOffice `legal-renderer` sidecar is live on ovh-app (Gotenberg 8.37.0); receipt in
+`docs/planning/2026-09-13-advocatio-reconciliation/continuation/EXTERNAL-TOOLS-REGISTER.md`.
+Collabora/OnlyOffice remain undecided.** Do not run it on this
 desktop (no Docker CLI).
 
 Phase 2 option: OnlyOffice *if* native DOCX redlines become

@@ -16,6 +16,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
 from legal_workspace.services.renderer import (
+    OFFICE_SUFFIXES,
     RendererUnavailable,
     RenderResult,
     convert_office_to_pdf,
@@ -39,11 +40,15 @@ async def convert_owner_document(file: Annotated[UploadFile, File()]) -> RenderR
         name = safe_document_name(file.filename or "")
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    # Refuse before anything touches disk.
+    if Path(name).suffix.lower() not in OFFICE_SUFFIXES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"unsupported office format: {Path(name).suffix or '(none)'}",
+        )
     folder = _renders_dir()
     src = folder / name
     dest = folder / f"{Path(name).stem}.pdf"
-    if src == dest:
-        raise HTTPException(status_code=400, detail="source is already a PDF")
     src.write_bytes(await file.read())
     try:
         return convert_office_to_pdf(src, dest)

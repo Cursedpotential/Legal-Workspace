@@ -62,6 +62,7 @@ export const SURFACES: Surface[] = [
   { path: "/calendar", label: "Court dates", group: "Operations", help: "Hearings and deadlines for this case. Confirm with the clerk.", icon: "calendar" },
   { path: "/evidence-requests", label: "Evidence requests", group: "Operations", help: "Written questions and document requests.", icon: "folder" },
   { path: "/evidence", label: "Evidence list", group: "Operations", help: "Working list of items you might show the court.", icon: "paperclip" },
+  { path: "/evidence-catalog", label: "Evidence catalog", group: "Operations", help: "Browse the Consignatio catalog: context, pending promotion, promoted evidence. Read only.", icon: "folder" },
   { path: "/missing-evidence", label: "Missing evidence", group: "Operations", help: "Track evidence you still need.", icon: "help" },
   { path: "/tasks", label: "Your tasks", group: "Operations", help: "Things only you can do.", icon: "check" },
   { path: "/timeline", label: "Timeline", group: "Operations", help: "What happened, in order.", icon: "clock" },

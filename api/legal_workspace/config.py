@@ -45,8 +45,18 @@ class Settings(BaseSettings):
     legal_bff_signing_secret: str = Field(default="", alias="LEGAL_BFF_SIGNING_SECRET")
     tailnet_owner_access: bool = Field(default=True, alias="LEGAL_TAILNET_OWNER_ACCESS")
     auth_clock_skew_seconds: int = Field(default=30, alias="LEGAL_AUTH_CLOCK_SKEW_SECONDS")
+    # Consignatio catalog (read-only). Empty URL = evidence desk reports "not configured".
+    consignatio_catalog_url: str = Field(default="", alias="CONSIGNATIO_CATALOG_URL")
+    consignatio_catalog_bindings_file: str = Field(default="", alias="CONSIGNATIO_CATALOG_BINDINGS")
+    # B2 (S3-compatible) read access for short-lived artifact links. No mount, no mirror.
+    b2_key_id: str = Field(default="", alias="B2_KEY_ID")
+    b2_application_key: str = Field(default="", alias="B2_APPLICATION_KEY")
+    b2_s3_endpoint: str = Field(default="", alias="B2_S3_ENDPOINT")
+    b2_region: str = Field(default="", alias="B2_REGION")
+    b2_link_ttl_seconds: int = Field(default=600, alias="B2_LINK_TTL_SECONDS")
 
     @field_validator(
+        "consignatio_catalog_url",
         "legal_api_service",
         "legal_web_service",
         "legal_postgres_service",
