@@ -47,6 +47,7 @@ export const SURFACES: Surface[] = [
   { path: "/custody-factors", label: "What the judge must consider", group: "Research", help: "The 12 things Michigan law says the judge must weigh.", icon: "list" },
   { path: "/agreements", label: "Agreement review", group: "Contracts", help: "Review, compare, and mark up agreement language.", icon: "file" },
   { path: "/documents", label: "Document viewer", group: "Contracts", help: "Open a PDF you produced. This does not open evidence from the evidence store.", icon: "file" },
+  { path: "/file-tools", label: "File tools", group: "Contracts", help: "Metadata and original timestamps for photos and screenshots, screenshot text (OCR), time-ordering a series, PDF conversion and metadata removal.", icon: "search" },
   { path: "/confidentiality-check", label: "Confidentiality check", group: "Contracts", help: "First-pass scan for words that might be private or protected. This is not a legal decision.", icon: "shield" },
   { path: "/drafts", label: "Motion writer", group: "Drafting", help: "Write the paper you may later file. Nothing here is filed until you say so.", icon: "pen" },
   { path: "/templates", label: "Starting templates", group: "Drafting", help: "Starting structure for a paper you may later file.", icon: "file" },
