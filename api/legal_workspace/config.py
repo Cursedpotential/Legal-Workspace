@@ -26,10 +26,12 @@ class Settings(BaseSettings):
     legal_postgres_service: str = Field(default="legal-postgres")
     evidence_platform_service: str = Field(default="evidence-platform")
     model_gateway_service: str = Field(default="model-gateway")
+    legal_renderer_service: str = Field(default="legal-renderer")
     legal_api_port: int = Field(default=8010)
     display_timezone: str = Field(default="America/New_York")
     evidence_platform_base_url: str = Field(default="http://evidence-platform:8000")
     model_gateway_base_url: str = Field(default="http://model-gateway:4000")
+    legal_renderer_base_url: str = Field(default="http://legal-renderer:3000")
     database_url: str = Field(default_factory=default_sqlite_url)
     invoke_models: bool = Field(default=False, alias="LEGAL_WORKSPACE_INVOKE_MODELS")
     debug_json: bool = Field(default=False, alias="LEGAL_WORKSPACE_DEBUG_JSON")
@@ -50,8 +52,10 @@ class Settings(BaseSettings):
         "legal_postgres_service",
         "evidence_platform_service",
         "model_gateway_service",
+        "legal_renderer_service",
         "evidence_platform_base_url",
         "model_gateway_base_url",
+        "legal_renderer_base_url",
         "database_url",
         "authentik_issuer",
         "authentik_jwks_url",

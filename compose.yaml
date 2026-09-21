@@ -44,6 +44,7 @@ services:
       MODEL_GATEWAY_SERVICE: model-gateway
       EVIDENCE_PLATFORM_BASE_URL: ${EVIDENCE_PLATFORM_BASE_URL:-http://contextforge:4444}
       MODEL_GATEWAY_BASE_URL: ${MODEL_GATEWAY_BASE_URL:-http://model-gateway:4000}
+      LEGAL_RENDERER_BASE_URL: http://legal-renderer:3000
       LEGAL_WORKSPACE_BYPASS_AUTH: "false"
       LEGAL_TAILNET_OWNER_ACCESS: "true"
       # Authentik's signing key remains in Authentik. legal-api fetches only the
@@ -65,6 +66,21 @@ services:
     networks:
       - legal
       - probata
+
+  # LibreOffice renderer sidecar (CAT5 `legal-renderer`, added 2026-09-20 by
+  # Claude Code · Fable 5.1). Gotenberg wraps headless LibreOffice behind HTTP.
+  # No published port: only legal-api reaches it, by service name, on `legal`.
+  # Chromium routes are disabled; this sidecar is LibreOffice + PDF engines only.
+  legal-renderer:
+    image: gotenberg/gotenberg:8.37.0
+    container_name: legal-renderer
+    restart: unless-stopped
+    command:
+      - gotenberg
+      - --chromium-disable-routes=true
+      - --api-timeout=180s
+    networks:
+      - legal
 
   legal-web:
     build:
