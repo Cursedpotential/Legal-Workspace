@@ -50,3 +50,34 @@ no blanket engine rewrite or duplicate evidence authority is authorized.
 
 Current receipts: `E-baseline.md` and `F0-route-parity.md`. Final deployment and
 browser results will be recorded separately; this plan is not deployment proof.
+
+## Family Law Toolkit companion surface (owner clarification)
+
+The Family Law Toolkit remains the mobile-friendly, quick-access companion:
+view and add documents, read cheat sheets, browse law and sources, and retrieve
+custom, domain-specific and case-specific information. Advocatio supplies the
+deeper analysis, drafting, strategy and review workflows. Deferring the disputed
+Basic/Advanced selector does not retire this companion or reduce integration scope.
+
+All toolkit data, features and sources must be accounted for. The existing
+383-capability inventory is a migration checklist, not proof of integration.
+Each entry needs a shared destination or a callable operation, its source/version,
+and a demonstrated result in the appropriate surface. Preserve custom case
+material and corrections with provenance and review status; importing an inventory
+must not silently promote its contents into accepted facts.
+
+Both surfaces must consume the same owned records, legal resource versions,
+document versions, case identifiers and operation contracts. Mobile document
+submission routes through the shared intake/custody owner; the workdesk receives
+linked records and accepted-source projections. A correction or new document
+must appear through the same record identity on both surfaces without duplicate
+manual entry. Keep analysis and private strategy access scoped appropriately.
+
+Acceptance for integration: select a toolkit cheat sheet, legal source and case
+document; open each from mobile and Advocatio and verify identical identifiers
+and versions. Add a synthetic document through the companion, observe its shared
+intake status and linked workdesk record, and verify permitted updates across
+both views. Exercise each incorporated/callable capability from the inventory;
+report unsupported items explicitly. Use shared React/TypeScript contracts,
+Propria design tokens and reusable responsive components so the surfaces can
+later merge without another data or framework rewrite.

@@ -10,9 +10,10 @@ from __future__ import annotations
 import sqlite3
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from importlib.resources import files
 from pathlib import Path
 
-_SCHEMA = Path(__file__).resolve().parents[3] / "sql" / "0001_legal_os_sqlite.sql"
+_SCHEMA_RESOURCE = files("legal_workspace").joinpath("sql/0001_legal_os_sqlite.sql")
 _ALLOWED_PHASES = frozenset({"Discovery", "Motions", "Hearing", "Trial"})
 
 
@@ -35,7 +36,7 @@ def connect(store_dir: Path) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
-    conn.executescript(_SCHEMA.read_text(encoding="utf-8"))
+    conn.executescript(_SCHEMA_RESOURCE.read_text(encoding="utf-8"))
     conn.commit()
     return conn
 

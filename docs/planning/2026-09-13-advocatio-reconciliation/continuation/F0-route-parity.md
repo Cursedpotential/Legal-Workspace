@@ -1,7 +1,7 @@
 # F0 route and parity audit
 
-Date: 2026-09-20  
-Repository: `E:/AI_Workspace/Projects/Propria/modules/Legal-desktop`  
+Date: 2026-09-20
+Repository: `E:/AI_Workspace/Projects/Propria/modules/Legal-desktop`
 Scope: read-only audit of the current Next web surface, its auth/proxy/API/chat boundaries, and the shortest common React/TypeScript/Vite/TanStack parity slice. The only new artifact in this task is this note. The existing dirty file `docs/planning/2026-09-13-advocatio-reconciliation/continuation/MOCKUP-IDENTITY-2026-09-20.md` was preserved.
 
 ## Evidence and settled target
@@ -78,3 +78,8 @@ Acceptance for this slice:
 - The common client builds with the shared baseline command and has Storybook fixtures for the required F0/F1 states. Browser interaction proof is required; a component snapshot alone is insufficient.
 
 This is a route and dependency disposition, not evidence of a completed migration, deployment, live auth validation, or production parity.
+
+Coordinator follow-through: commit `a233171` corrects the assistant form to call
+`/api/chat` and render network/non-JSON failures. Production build and isolated
+browser success/error fixtures passed after the change. The SSR identity and
+shared-client adapter work above remains part of the migration boundary.
