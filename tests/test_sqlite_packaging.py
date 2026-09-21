@@ -39,13 +39,11 @@ def test_sqlite_schema_is_available_from_built_wheel(tmp_path: Path) -> None:
 
     probe = """
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from legal_workspace.services.sqlite_store import load_settings
 
-with TemporaryDirectory() as directory:
-    settings = load_settings(Path(directory))
-    assert settings.theme == "dark"
-    assert settings.case_phase == "Discovery"
+settings = load_settings(Path.cwd() / 'probe-store')
+assert settings.theme == "dark"
+assert settings.case_phase == "Discovery"
 """
     environment = os.environ.copy()
     environment["PYTHONPATH"] = str(installed)
