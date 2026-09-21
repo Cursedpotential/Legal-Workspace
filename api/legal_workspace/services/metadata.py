@@ -83,6 +83,11 @@ def _summary(fields: dict[str, object]) -> dict[str, object]:
     by_tag: dict[str, object] = {}
     for key, value in fields.items():
         by_tag.setdefault(key.split(":", 1)[-1], value)
+    # Raw GPS tags are unsigned with a separate N/S/E/W ref; exiftool's Composite values
+    # carry the sign (west and south negative), so they win.
+    for key, value in fields.items():
+        if key.startswith("Composite:GPS"):
+            by_tag[key.split(":", 1)[-1]] = value
     out: dict[str, object] = {}
     for label, tags in _SUMMARY_TAGS.items():
         for tag in tags:
