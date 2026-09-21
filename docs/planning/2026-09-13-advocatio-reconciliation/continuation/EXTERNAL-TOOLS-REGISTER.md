@@ -41,7 +41,7 @@ State is what the code and the running deployment show, not what a plan says.
 | DOC-04 | Programmatic PDF form fill | **pypdf**; pdf-lib; pdftk-java | pypdf installed; no fill service or route. |
 | DOC-05 | Markdown / JSON → PDF | **WeasyPrint** + **Jinja2**; md-to-pdf; Pandoc; @react-pdf/renderer | Absent. |
 | DOC-06 | PDF → Markdown, with OCR | **Docling** (+OCR); marker; unstructured; Tesseract | Absent. Evidence-side extraction belongs to Intake/Probata, not here. |
-| DOC-10 | Metadata read / scrub / report | **exiftool** | Absent. (Gotenberg ships exiftool; its metadata routes are now reachable from legal-api.) |
+| DOC-10 | Metadata read / scrub / report | **exiftool** (read), **pikepdf** (scrub) | **Integrated 2026-09-21** for PDFs — see receipt below. Still absent: non-PDF files, hash check against the evidence platform, printable report. |
 | DOC-03 | PDF viewing + AcroForm fill in browser | **pdf.js**; react-pdf-viewer; pdfme | Absent from `web/package.json`. |
 | DOC-01 | In-browser editor with tracked changes | TipTap (v1 pick); **Collabora Online**; **OnlyOffice Docs**; Lexical | Absent. Editor choice is REDISCUSSION decision 1 — owner call. |
 | DOC-07 | Treatise / EPUB export | Calibre `ebook-convert`; Pandoc | Absent; recorded as later. |
@@ -64,8 +64,7 @@ None of these was touched today. Their state is whatever `rediscovery.json` reco
 ## Order of work
 
 1. DOC-02 LibreOffice renderer — done today.
-2. DOC-10 metadata and DOC-05 Markdown/JSON → PDF — smallest next steps; both can
-   ride the renderer sidecar or plain Python libraries on `legal-api`.
+2. DOC-10 PDF metadata — done 2026-09-21. DOC-05 Markdown/JSON → PDF is next.
 3. DOC-04 form fill + DOC-11 forms, then DOC-03 viewer in the web client.
 4. DOC-06 extraction/OCR after the ownership line with Intake is confirmed.
 5. DOC-01 editor after the owner picks among the options.
@@ -101,3 +100,11 @@ Verified live 2026-09-21 ~04:00 UTC against `https://legal.tilapia-skilift.ts.ne
 - Observed: LibreOffice PDFs are **not byte-deterministic** (same DOCX → different sha256 each run; embedded timestamps). DOC-02 asks for deterministic rendering — open item.
 
 **How every later tool gets registered:** add a `@mcp.tool` function in `mcp_face.py` over the service; after deploy, ContextForge picks it up on gateway refresh. No per-tool registration step.
+
+## Receipt — DOC-10 (PDF metadata)
+
+Verified live 2026-09-21 ~06:05 UTC (commit `f5e8fb3`), called **through ContextForge** (`advocatio-read-pdf-metadata`, `advocatio-scrub-pdf-metadata`; the gateway refresh added both tools automatically):
+
+- Read of a synthetic LibreOffice PDF returned 10 authored fields (Author, Creator, CreatorTool, Producer, Create/Modify/Metadata dates, Date, Format, Language).
+- Scrub removed 9 of them; exiftool re-read of the output shows only `Language` (the catalog's document-language tag, not authorship). Page text intact. Probe output removed from the server.
+- HTTP twins: `POST /v1/documents:metadata`, `POST /v1/documents:scrub-metadata`. Uploads are processed in a temp folder and not kept; only the scrubbed copy is stored under `renders/`.
