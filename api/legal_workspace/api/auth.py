@@ -154,7 +154,11 @@ def _bearer_token(authorization: str | None) -> str | None:
 
 
 def _canonical_bff_message(request: Request, timestamp: str, nonce: str, body: bytes) -> bytes:
-    target = request.url.path
+    # Sign the path as sent on the wire: the web bridge percent-encodes each
+    # segment (":" becomes "%3A"), and request.url.path is already decoded, so
+    # every colon route (/v1/documents:convert, /v1/bates:stamp) failed to verify.
+    raw_path = request.scope.get("raw_path")
+    target = raw_path.decode("ascii") if raw_path else request.url.path
     if request.url.query:
         target = f"{target}?{request.url.query}"
     body_hash = hashlib.sha256(body).hexdigest()

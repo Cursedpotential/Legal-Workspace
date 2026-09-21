@@ -149,6 +149,16 @@ def test_signed_bff_request_is_accepted_without_browser_bearer(secure_auth) -> N
     assert response.json()["source"] == "signed-bff"
 
 
+def test_signed_bff_request_verifies_percent_encoded_colon_route(secure_auth) -> None:
+    # The web bridge signs encodeURIComponent() segments, so ":" arrives as "%3A".
+    target = "/v1/privilege%3Ascan"
+    body = b'{"text": "synthetic"}'
+    headers = _signed_bff_headers("POST", target, body)
+    headers["content-type"] = "application/json"
+    response = TestClient(app).post(target, headers=headers, content=body)
+    assert response.status_code != 401
+
+
 def test_invalid_bff_signature_is_denied(secure_auth) -> None:
     headers = _signed_bff_headers("GET", "/v1/auth/whoami")
     headers["x-legal-bff-signature"] = "0" * 64
