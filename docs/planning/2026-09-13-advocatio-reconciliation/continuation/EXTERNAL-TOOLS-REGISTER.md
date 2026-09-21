@@ -40,8 +40,8 @@ State is what the code and the running deployment show, not what a plan says.
 | — | DOCX assembly | **python-docx** | In code (`services/docx_export.py`). |
 | DOC-04 | Programmatic PDF form fill | **pypdf**; pdf-lib; pdftk-java | pypdf installed; no fill service or route. |
 | DOC-05 | Markdown / JSON → PDF | **WeasyPrint** + **Jinja2**; md-to-pdf; Pandoc; @react-pdf/renderer | Absent. |
-| DOC-06 | PDF → Markdown, with OCR | **Docling** (+OCR); marker; unstructured; Tesseract | Absent. Evidence-side extraction belongs to Intake/Probata, not here. |
-| DOC-10 | Metadata read / scrub / report | **exiftool** (read), **pikepdf** (scrub) | **Integrated 2026-09-21** for PDFs — see receipt below. Still absent: non-PDF files, hash check against the evidence platform, printable report. |
+| DOC-06 | PDF → Markdown, with OCR | **Tesseract** (live); Docling; marker; unstructured | **Image OCR integrated 2026-09-21** (Tesseract 5.5). Still absent: PDF → Markdown/layout extraction (Docling), OCR of scanned PDFs, and feeding OCR text into Intake's vector index. |
+| DOC-10 | Metadata read / scrub / report | **exiftool** (read, every file type), **pikepdf** (PDF scrub) | **Integrated 2026-09-21** — images, video, audio, office, PDF; original-time resolution and series ordering. Still absent: scrub for images, hash check against the evidence platform, printable report. |
 | DOC-03 | PDF viewing + AcroForm fill in browser | **pdf.js**; react-pdf-viewer; pdfme | Absent from `web/package.json`. |
 | DOC-01 | In-browser editor with tracked changes | TipTap (v1 pick); **Collabora Online**; **OnlyOffice Docs**; Lexical | Absent. Editor choice is REDISCUSSION decision 1 — owner call. |
 | DOC-07 | Treatise / EPUB export | Calibre `ebook-convert`; Pandoc | Absent; recorded as later. |
@@ -108,3 +108,39 @@ Verified live 2026-09-21 ~06:05 UTC (commit `f5e8fb3`), called **through Context
 - Read of a synthetic LibreOffice PDF returned 10 authored fields (Author, Creator, CreatorTool, Producer, Create/Modify/Metadata dates, Date, Format, Language).
 - Scrub removed 9 of them; exiftool re-read of the output shows only `Language` (the catalog's document-language tag, not authorship). Page text intact. Probe output removed from the server.
 - HTTP twins: `POST /v1/documents:metadata`, `POST /v1/documents:scrub-metadata`. Uploads are processed in a temp folder and not kept; only the scrubbed copy is stored under `renders/`.
+
+> **Correction 2026-09-21 (owner):** the first DOC-10 cut covered PDFs only. The list already said exiftool for any
+> file type, and images — not PDFs — are the evidence. The PDF-only receipt above is superseded by the one below.
+
+## Receipt — DOC-10 for every file type, original time, device (2026-09-21 ~06:20 UTC, commit `ee67000`)
+
+All called **through ContextForge** on synthetic files; nothing kept on the server.
+
+- `advocatio-read-file-metadata`: exiftool 13.25 installed in the `legal-api` image. A JPEG with EXIF returned capture
+  time with offset, modify time, device make/model, editing software, signed GPS (43.0125, -83.6875), 38 fields, and
+  a sha256 equal to the local file's.
+- `original_time` (owner requirement: screenshots often show no date; order depends on the original timestamp):
+  candidates come from EXIF capture time, a Google Takeout sidecar's `photoTakenTime`, embedded XMP/PNG/container
+  creation times, device-generated filename stamps (`Screenshot_20240312-141502`, `PXL_…`, `IMG_…`), epoch-style
+  names (`received_1710252000123`) and date-only names (`IMG-20240312-WA0007`, low confidence). Each carries source,
+  confidence and timezone basis; disagreement over a day sets `conflict`. **Filesystem dates are never candidates**
+  (uploads carry the upload's time; the corpus restore re-stamped files in batches).
+- `advocatio-order-images-by-original-time`: four shots came back in true order; `IMG_4821.PNG` (no recoverable
+  time) was reported as unresolved; mixed timezone basis was flagged.
+- Summary also carries device serial, lens, host computer, unique image id and user comment when present.
+- **Limit to know:** an iOS screenshot named `IMG_####.PNG` with no EXIF has no recoverable time in the file. Its
+  time has to come from the catalog's source occurrence or a Takeout sidecar — pass the sidecar text to the tool.
+
+## Receipt — DOC-06 image OCR (2026-09-21 ~06:12 UTC, commit `e75804c`)
+
+- `advocatio-ocr-image` / `POST /v1/documents:ocr`: Tesseract 5.5.0 in the `legal-api` image. A synthetic chat
+  screenshot came back word-for-word (29 words, mean confidence 95.5) with a pixel box and confidence per line.
+  Layout modes: auto, block, sparse. Output is marked a derivative, never court-safe.
+
+## Open: making screenshot text searchable (owner, 2026-09-21 02:03)
+
+Intake's CocoIndex pipeline does not index images today: `backend/src/casebible_index/config.py` has no image
+extensions and `extractors.py` says "OCR is intentionally deferred". Intake's own plan lists it as CBX-P8-003.
+Two steps: (1) an OCR branch in Intake's extractor so screenshots become indexable text in Weaviate, kept apart from
+native-export text; (2) an index run over the screenshots in B2 — a billable, long job that needs the owner's go
+with counts from the catalog first.
