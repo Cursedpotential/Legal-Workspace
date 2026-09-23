@@ -25,7 +25,13 @@ class ReviewCreate(BaseModel):
     section_id: UUID
     verdict: ReviewVerdict
     rationale: str
-    reviewer: str = "owner"
+    # Backward-compatible input only. Authorization and the persisted actor are
+    # derived from the authenticated principal, never from this caller value.
+    reviewer: str | None = Field(default=None, exclude=True)
+    matter_id: UUID | None = None
+    package_id: UUID | None = None
+    manifest_hash: str | None = None
+    package_schema_version: str | None = None
 
 
 class ReviewDecision(BaseModel):

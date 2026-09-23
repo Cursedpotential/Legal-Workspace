@@ -43,8 +43,8 @@ def test_import_endpoint_omits_candidates(tmp_path, client_with_auth) -> None:
     client.headers = {"Authorization": "Bearer test-jwt-secret-for-testing"}
     payload = {
         "package_id": str(uuid4()),
-        "manifest_hash": "sha256:pkg",
-        "matter_id": str(uuid4()),
+        "manifest_hash": "sha256:" + "a" * 64,
+        "matter_id": str(main_mod.WORKSPACE.load().matter.matter_id),
         "created_at": datetime.now(UTC).isoformat(),
         "items": [
             {
@@ -53,7 +53,7 @@ def test_import_endpoint_omits_candidates(tmp_path, client_with_auth) -> None:
                 "assertion_version": 1,
                 "span_locator": "s:1",
                 "custody_locator": "h1:1",
-                "content_hash": "sha256:a",
+                "content_hash": "sha256:" + "b" * 64,
                 "review_state": "approved",
             },
             {
@@ -62,7 +62,7 @@ def test_import_endpoint_omits_candidates(tmp_path, client_with_auth) -> None:
                 "assertion_version": 1,
                 "span_locator": "s:2",
                 "custody_locator": "h1:2",
-                "content_hash": "sha256:b",
+                "content_hash": "sha256:" + "c" * 64,
                 "review_state": "candidate",
             },
         ],
@@ -73,3 +73,23 @@ def test_import_endpoint_omits_candidates(tmp_path, client_with_auth) -> None:
     assert body["blocked"] is False
     assert body["accepted_item_count"] == 1
     assert len(body["omitted_item_ids"]) == 1
+
+
+def test_import_endpoint_rejects_malformed_package_id_without_write(
+    tmp_path, client_with_auth
+) -> None:
+    main_mod.WORKSPACE = workspace_mod.get_workspace(tmp_path)
+    matter_id = main_mod.WORKSPACE.load().matter.matter_id
+    before = {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()}
+    response = client_with_auth.post(
+        "/v1/legal-source-packages:import",
+        json={
+            "package_id": "not-a-uuid",
+            "manifest_hash": "sha256:" + "a" * 64,
+            "matter_id": str(matter_id),
+            "created_at": datetime.now(UTC).isoformat(),
+            "items": [],
+        },
+    )
+    assert response.status_code == 422
+    assert {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()} == before

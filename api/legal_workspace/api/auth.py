@@ -52,6 +52,41 @@ class AuthenticationDenied(ValueError):
     """Raised when supplied credentials do not satisfy the auth contract."""
 
 
+class PrincipalAuthorizationDenied(PermissionError):
+    """Raised when an authenticated identity is ineligible for an action."""
+
+
+def require_human_review_actor(
+    principal: AuthenticatedPrincipal,
+    *,
+    settings: Settings | None = None,
+) -> str:
+    """Return a stable audit actor only for an eligible Authentik human.
+
+    Gateway, BFF, network/device, bypass, and agent identities authenticate a
+    transport or service. They do not prove that a human adopted legal work.
+    """
+
+    current = settings or get_settings()
+    eligible_groups = {
+        item.strip()
+        for item in current.authentik_review_groups.split(",")
+        if item.strip()
+    }
+    if principal.source != "authentik":
+        raise PrincipalAuthorizationDenied(
+            "an eligible authenticated human must record the review verdict"
+        )
+    if not eligible_groups or not eligible_groups.intersection(principal.groups):
+        raise PrincipalAuthorizationDenied(
+            "authenticated human is not in an eligible review group"
+        )
+    subject = principal.subject.strip()
+    if not subject:
+        raise PrincipalAuthorizationDenied("authenticated human has no stable subject")
+    return f"authentik:{subject}"
+
+
 class AuthentikTokenVerifier:
     """Verify Authentik JWTs against the provider's pinned issuer contract."""
 

@@ -16,7 +16,11 @@ from pydantic import BaseModel
 from fastmcp.utilities.lifespan import combine_lifespans
 
 from legal_workspace import __version__
-from legal_workspace.api.auth import AuthenticatedPrincipal, LegalWorkspaceAuthMiddleware
+from legal_workspace.api.auth import (
+    AuthenticatedPrincipal,
+    LegalWorkspaceAuthMiddleware,
+    PrincipalAuthorizationDenied,
+)
 from legal_workspace.api.mcp_face import mcp_app
 from legal_workspace.config import get_settings
 from legal_workspace.contracts.citations import AuthorityCitation, EvidenceCitation
@@ -420,9 +424,11 @@ def list_reviews() -> list[ReviewDecision]:
 
 
 @app.post("/v1/reviews", response_model=ReviewDecision)
-def create_review(body: ReviewCreate) -> ReviewDecision:
+def create_review(request: Request, body: ReviewCreate) -> ReviewDecision:
     try:
-        return WORKSPACE.add_review(body)
+        return WORKSPACE.add_review(body, principal=request.state.auth)
+    except PrincipalAuthorizationDenied as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
     except StopIteration as exc:
         raise HTTPException(status_code=404, detail="unknown draft section") from exc
     except ValueError as exc:
@@ -441,7 +447,10 @@ def create_release(body: ReleaseCreate) -> ReleaseBuild:
 
 @app.post("/v1/legal-source-packages:import", response_model=ImportResponse)
 def import_package(package: LegalSourcePackage) -> ImportResponse:
-    result = WORKSPACE.import_package(package)
+    try:
+        result = WORKSPACE.import_package(package)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     return ImportResponse(
         blocked=result.blocked,
         accepted_item_count=len(result.accepted.items),

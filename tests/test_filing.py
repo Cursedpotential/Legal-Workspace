@@ -70,24 +70,26 @@ def test_http_filing_readiness(tmp_path) -> None:
     assert blocked.status_code == 409
 
 
-def test_filing_calls_agno_verify_and_fails_closed_on_mock_hash(tmp_path) -> None:
+def test_filing_calls_agno_verify_and_fails_closed_when_unreachable(tmp_path) -> None:
     workspace = Workspace(tmp_path)
-    package, _citation = _approved_package()
+    package, _citation = _approved_package(workspace.load().matter.matter_id)
     workspace.import_package(package)
 
     def handler(request: httpx.Request) -> httpx.Response:
-        raise AssertionError("mock locator hashes must not hit Agno")
+        return httpx.Response(503)
 
-    report = workspace.filing_readiness(agno_http=httpx.Client(transport=httpx.MockTransport(handler)))
+    report = workspace.filing_readiness(
+        agno_http=httpx.Client(transport=httpx.MockTransport(handler))
+    )
     check = next(item for item in report.checks if item.check_id == "agno-verify")
     assert check.state is CheckState.FAIL
-    assert "not 64-hex" in check.reason
+    assert "unreachable" in check.reason
     assert Workspace(tmp_path).load().last_agno_verify
 
 
 def test_filing_agno_verify_pass_when_agno_returns_intact(tmp_path) -> None:
     workspace = Workspace(tmp_path)
-    package, _citation = _approved_package()
+    package, _citation = _approved_package(workspace.load().matter.matter_id)
     hex_digest = "ab" * 32
     package.items[0].content_hash = f"sha256:{hex_digest}"
     workspace.import_package(package)

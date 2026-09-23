@@ -11,6 +11,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
+from legal_workspace.api.auth import AuthenticatedPrincipal, require_human_review_actor
 from legal_workspace.contracts.citations import AuthorityCitation, AuthorityLevel, EvidenceCitation
 from legal_workspace.contracts.identity import CourtCaseRef, MatterRef
 from legal_workspace.contracts.source_package import LegalSourcePackage, ReviewState
@@ -93,9 +94,13 @@ from legal_workspace.config import get_settings
 from legal_workspace.db.store import WorkspaceStore, create_tables, to_uuid
 from legal_workspace.services.agno_client import list_matters, verify_package_hashes
 from legal_workspace.domain.provider_grid import confidential_blocked_reason
-from legal_workspace.services.gateway import GatewayResult, invoke_chat
+from legal_workspace.services.gateway import invoke_chat
 from legal_workspace.services.routing import load_routing, model_for_role, surface_for_role
-from legal_workspace.services.source_package import ImportResult, import_legal_source_package
+from legal_workspace.services.source_package import (
+    ImportResult,
+    import_legal_source_package,
+    validate_consumer_package,
+)
 
 
 class DraftSection(BaseModel):
@@ -416,16 +421,9 @@ class Workspace:
 
     def import_package(self, package: LegalSourcePackage) -> ImportResult:
         state = self.load()
+        validate_consumer_package(package, state.matter.matter_id)
         result = import_legal_source_package(package)
         if result.blocked:
-            append_jsonl(
-                self.events_path,
-                {
-                    "action": "import-blocked",
-                    "reason": result.reason,
-                    "omitted_item_ids": list(result.omitted_item_ids),
-                },
-            )
             return result
         state.package = result.accepted
         state.omitted_item_ids = list(result.omitted_item_ids)
@@ -1001,37 +999,70 @@ class Workspace:
         self._write(state, action=f"factor-{letter.value}-note")
         return entry
 
-    def _section_hash(self, section: DraftSection) -> str:
+    def _section_hash(self, section: DraftSection, state: WorkspaceState) -> str:
+        package = state.package
         return canonical_content_hash(
             {
+                "matter_id": str(state.matter.matter_id),
+                "package_id": str(package.package_id) if package else None,
+                "package_manifest_hash": package.manifest_hash if package else None,
+                "package_schema_version": package.schema_version if package else None,
                 "section_id": str(section.section_id),
                 "heading": section.heading,
                 "body": section.body,
                 "factor_letter": section.factor_letter.value if section.factor_letter else None,
-                "citation_ids": sorted(str(item.assertion_id) for item in section.citations),
+                "citations": sorted(
+                    (
+                        str(item.package_id),
+                        str(item.assertion_id),
+                        item.assertion_version,
+                        item.span_locator,
+                    )
+                    for item in section.citations
+                ),
             }
         )
 
-    def add_review(self, created: ReviewCreate) -> ReviewDecision:
-        if created.reviewer != "owner":
-            raise ValueError("only the owner may record a review verdict")
+    def add_review(
+        self,
+        created: ReviewCreate,
+        *,
+        principal: AuthenticatedPrincipal,
+    ) -> ReviewDecision:
+        reviewer = require_human_review_actor(principal)
         state = self.load()
         section = next(row for row in state.drafts if row.section_id == created.section_id)
         if created.verdict is ReviewVerdict.APPROVE:
             if state.package is None:
                 raise ValueError("import an approved LegalSourcePackage first")
+            if created.matter_id is not None and created.matter_id != state.matter.matter_id:
+                raise ValueError("review matter_id does not match this workspace")
+            if created.package_id is not None and created.package_id != state.package.package_id:
+                raise ValueError("review package_id does not match the imported package")
+            if (
+                created.manifest_hash is not None
+                and created.manifest_hash != state.package.manifest_hash
+            ):
+                raise ValueError("review manifest_hash does not match the imported package")
+            if (
+                created.package_schema_version is not None
+                and created.package_schema_version != state.package.schema_version
+            ):
+                raise ValueError(
+                    "review package_schema_version does not match the imported package"
+                )
             gate = validate_factual_citations(section.citations, state.package)
             if not gate.ok:
                 raise ValueError("; ".join(gate.blockers))
             if not section.citations:
                 raise ValueError("cannot approve a section with no factual citations")
-        content_hash = self._section_hash(section)
+        content_hash = self._section_hash(section, state)
         decision = ReviewDecision(
             section_id=section.section_id,
             work_product_id=state.work_product.work_product_id if state.work_product else None,
             verdict=created.verdict,
             rationale=created.rationale,
-            reviewer=created.reviewer,
+            reviewer=reviewer,
             content_hash=content_hash,
         )
         state.reviews.append(decision)
@@ -1044,8 +1075,9 @@ class Workspace:
         return decision
 
     def latest_valid_approval(self, section: DraftSection) -> ReviewDecision | None:
-        current = self._section_hash(section)
-        for decision in reversed(self.load().reviews):
+        state = self.load()
+        current = self._section_hash(section, state)
+        for decision in reversed(state.reviews):
             if decision.section_id != section.section_id:
                 continue
             if decision.verdict is not ReviewVerdict.APPROVE:

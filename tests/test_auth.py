@@ -7,16 +7,21 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import json
 import time
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
+from uuid import uuid4
 
 import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi.testclient import TestClient
 from legal_workspace.api import auth as auth_mod
+from legal_workspace.api import main as main_mod
 from legal_workspace.api.main import app
+from legal_workspace.services.workspace import Workspace
+from test_review_release import _drafted
 
 ISSUER = "https://auth.example.test/application/o/advocatio/"
 AUDIENCE = "advocatio"
@@ -167,6 +172,91 @@ def test_mcp_gateway_token_lane(secure_auth, monkeypatch: pytest.MonkeyPatch) ->
     assert accepted.json()["source"] == "mcp-gateway"
     denied = TestClient(app).get("/v1/auth/whoami", headers={"authorization": "Bearer " + "x" * 48})
     assert denied.status_code == 401
+
+
+def test_review_action_requires_human_even_when_service_is_authenticated(
+    secure_auth, monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    monkeypatch.setattr(main_mod, "WORKSPACE", Workspace(tmp_path))
+    body = {
+        "section_id": str(uuid4()),
+        "verdict": "approve",
+        "rationale": "synthetic action-auth probe",
+        "reviewer": "owner",
+    }
+    human = TestClient(app).post(
+        "/v1/reviews",
+        headers={"authorization": f"Bearer {_token(secure_auth)}"},
+        json=body,
+    )
+    assert human.status_code == 404
+
+    service_token = "gateway-" + "k" * 40
+    monkeypatch.setenv("LEGAL_MCP_GATEWAY_TOKEN", service_token)
+    service = TestClient(app).post(
+        "/v1/reviews",
+        headers={"authorization": f"Bearer {service_token}"},
+        json=body,
+    )
+    assert service.status_code == 403
+    assert "authenticated human" in service.json()["detail"]
+
+
+def test_review_action_rejects_bff_and_human_without_review_group(
+    secure_auth, monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    monkeypatch.setattr(main_mod, "WORKSPACE", Workspace(tmp_path))
+    body = json.dumps(
+        {
+            "section_id": str(uuid4()),
+            "verdict": "approve",
+            "rationale": "synthetic action-auth probe",
+            "reviewer": "owner",
+        }
+    ).encode()
+    before = {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()}
+    bff = TestClient(app).post(
+        "/v1/reviews",
+        headers={
+            "content-type": "application/json",
+            **_signed_bff_headers("POST", "/v1/reviews", body),
+        },
+        content=body,
+    )
+    assert bff.status_code == 403
+
+    monkeypatch.setenv("AUTHENTIK_ALLOWED_GROUPS", "advocatio-users,readers")
+    reader = TestClient(app).post(
+        "/v1/reviews",
+        headers={
+            "authorization": f"Bearer {_token(secure_auth, groups=['readers'])}",
+            "content-type": "application/json",
+        },
+        content=body,
+    )
+    assert reader.status_code == 403
+    assert {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()} == before
+
+
+def test_valid_human_review_uses_token_subject_not_forged_body(
+    secure_auth, monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    workspace = Workspace(tmp_path)
+    section = _drafted(workspace)
+    monkeypatch.setattr(main_mod, "WORKSPACE", workspace)
+    response = TestClient(app).post(
+        "/v1/reviews",
+        headers={"authorization": f"Bearer {_token(secure_auth)}"},
+        json={
+            "section_id": str(section.section_id),
+            "verdict": "approve",
+            "rationale": "synthetic reviewed citation",
+            "reviewer": "forged-body-value",
+        },
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["reviewer"] == "authentik:owner-subject"
+    assert Workspace(tmp_path).load().reviews[-1].reviewer == "authentik:owner-subject"
 
 
 def test_short_mcp_gateway_token_leaves_the_lane_off(secure_auth, monkeypatch: pytest.MonkeyPatch) -> None:

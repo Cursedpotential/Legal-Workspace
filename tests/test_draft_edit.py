@@ -6,14 +6,23 @@
 from fastapi.testclient import TestClient
 
 from legal_workspace.api import main as main_mod
+from legal_workspace.api.auth import AuthenticatedPrincipal
 from legal_workspace.api.main import app
 from legal_workspace.domain.release import ReleaseCreate
+from legal_workspace.domain.factors import FactorCitationLink, FactorLetter
 from legal_workspace.domain.review import ReviewCreate, ReviewVerdict
 from legal_workspace.domain.templates import TemplateInstantiate
 from legal_workspace.services import workspace as workspace_mod
 from legal_workspace.services.workspace import Workspace
 from test_first_slice import _approved_package
-from legal_workspace.domain.factors import FactorCitationLink, FactorLetter
+
+HUMAN = AuthenticatedPrincipal(
+    subject="owner-subject",
+    username="owner",
+    email="owner@example.test",
+    groups=("advocatio-users",),
+    source="authentik",
+)
 
 
 def test_edit_updates_unreleased_draft(tmp_path) -> None:
@@ -28,7 +37,7 @@ def test_edit_updates_unreleased_draft(tmp_path) -> None:
 
 def test_edit_of_released_section_forks(tmp_path) -> None:
     workspace = Workspace(tmp_path)
-    package, citation = _approved_package()
+    package, citation = _approved_package(workspace.load().matter.matter_id)
     workspace.import_package(package)
     workspace.attach_factor_citation(
         FactorCitationLink(
@@ -44,7 +53,8 @@ def test_edit_of_released_section_forks(tmp_path) -> None:
             section_id=section.section_id,
             verdict=ReviewVerdict.APPROVE,
             rationale="test",
-        )
+        ),
+        principal=HUMAN,
     )
     workspace.build_release_candidate(ReleaseCreate(section_ids=[section.section_id]))
     forked = workspace.update_draft(section.section_id, "Fork", "New text.")

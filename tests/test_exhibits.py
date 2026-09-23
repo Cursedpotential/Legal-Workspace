@@ -28,11 +28,11 @@ from legal_workspace.services import workspace as workspace_mod
 from legal_workspace.services.workspace import Workspace
 
 
-def _package() -> LegalSourcePackage:
+def _package(matter_id=None) -> LegalSourcePackage:
     return LegalSourcePackage(
         package_id=uuid4(),
-        manifest_hash="sha256:exhibits",
-        matter_id=uuid4(),
+        manifest_hash="sha256:" + "a" * 64,
+        matter_id=matter_id or uuid4(),
         created_at=datetime.now(UTC),
         items=[
             LegalSourcePackageItem(
@@ -41,7 +41,7 @@ def _package() -> LegalSourcePackage:
                 assertion_version=1,
                 span_locator="sms:2024-03-12:14:02",
                 custody_locator="h1:exh",
-                content_hash="sha256:span",
+                content_hash="sha256:" + "b" * 64,
                 review_state=ReviewState.APPROVED,
             ),
             LegalSourcePackageItem(
@@ -50,7 +50,7 @@ def _package() -> LegalSourcePackage:
                 assertion_version=1,
                 span_locator="sms:unreviewed",
                 custody_locator="h1:skip",
-                content_hash="sha256:skip",
+                content_hash="sha256:" + "c" * 64,
                 review_state=ReviewState.CANDIDATE,
             ),
         ],
@@ -65,7 +65,7 @@ def test_blank_workspace_has_no_exhibits_or_bates(tmp_path) -> None:
 
 def test_candidates_are_approved_package_items_only(tmp_path) -> None:
     workspace = Workspace(tmp_path)
-    package = _package()
+    package = _package(workspace.load().matter.matter_id)
     imported = workspace.import_package(package)
     assert imported.blocked is False
     rows = workspace.list_exhibits()
@@ -79,7 +79,7 @@ def test_candidates_are_approved_package_items_only(tmp_path) -> None:
 
 def test_annotation_persists_and_unknown_item_is_rejected(tmp_path) -> None:
     workspace = Workspace(tmp_path)
-    imported = workspace.import_package(_package())
+    imported = workspace.import_package(_package(workspace.load().matter.matter_id))
     item_id = imported.accepted.items[0].item_id
     annotated = workspace.annotate_exhibit(
         ExhibitAnnotationCreate(
@@ -114,7 +114,7 @@ def test_http_exhibits(tmp_path) -> None:
     empty = client.get("/v1/exhibits")
     assert empty.status_code == 200
     assert empty.json() == []
-    package = _package()
+    package = _package(store.load().matter.matter_id)
     imported = client.post(
         "/v1/legal-source-packages:import",
         json=package.model_dump(mode="json"),
@@ -152,7 +152,7 @@ def test_bates_sequence_is_owner_triggered_not_seeded(tmp_path) -> None:
     assert next_bates_number("GENESEE", ["GENESEE-000001", "OWNER-12"]) == "GENESEE-000002"
     assert bates_prefix("Genesee County custody matter").startswith("GENESEE")
     workspace = Workspace(tmp_path)
-    imported = workspace.import_package(_package())
+    imported = workspace.import_package(_package(workspace.load().matter.matter_id))
     item_id = imported.accepted.items[0].item_id
     assert workspace.list_exhibits()[0].bates_number == ""
     stamped = workspace.assign_bates(item_id)

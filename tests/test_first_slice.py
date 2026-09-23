@@ -11,6 +11,7 @@ from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
+from legal_workspace.api.auth import AuthenticatedPrincipal
 from legal_workspace.api.main import app
 from legal_workspace.contracts.citations import EpistemicClass, EvidenceCitation
 from legal_workspace.contracts.source_package import (
@@ -25,13 +26,21 @@ from legal_workspace.api import main as main_mod
 from legal_workspace.services import workspace as workspace_mod
 from legal_workspace.services.workspace import Workspace
 
+HUMAN = AuthenticatedPrincipal(
+    subject="owner-subject",
+    username="owner",
+    email="owner@example.test",
+    groups=("advocatio-users",),
+    source="authentik",
+)
 
-def _approved_package() -> tuple[LegalSourcePackage, EvidenceCitation]:
+
+def _approved_package(matter_id=None) -> tuple[LegalSourcePackage, EvidenceCitation]:
     assertion_id = uuid4()
     package = LegalSourcePackage(
         package_id=uuid4(),
-        manifest_hash="sha256:slice",
-        matter_id=uuid4(),
+        manifest_hash="sha256:" + "a" * 64,
+        matter_id=matter_id or uuid4(),
         created_at=datetime.now(UTC),
         items=[
             LegalSourcePackageItem(
@@ -40,7 +49,7 @@ def _approved_package() -> tuple[LegalSourcePackage, EvidenceCitation]:
                 assertion_version=1,
                 span_locator="sms:2024-03-12:14:02",
                 custody_locator="h1:slice",
-                content_hash="sha256:span",
+                content_hash="sha256:" + "b" * 64,
                 review_state=ReviewState.APPROVED,
             ),
             LegalSourcePackageItem(
@@ -49,7 +58,7 @@ def _approved_package() -> tuple[LegalSourcePackage, EvidenceCitation]:
                 assertion_version=1,
                 span_locator="sms:unreviewed",
                 custody_locator="h1:no",
-                content_hash="sha256:no",
+                content_hash="sha256:" + "c" * 64,
                 review_state=ReviewState.CANDIDATE,
             ),
         ],
@@ -75,7 +84,7 @@ def test_workspace_walks_matter_import_factor_draft_gate(tmp_path) -> None:
     assert len(home.issue.children) == 3
     assert home.package is None
 
-    package, citation = _approved_package()
+    package, citation = _approved_package(home.matter.matter_id)
     imported = workspace.import_package(package)
     assert imported.blocked is False
     assert len(imported.accepted.items) == 1
@@ -107,7 +116,8 @@ def test_workspace_walks_matter_import_factor_draft_gate(tmp_path) -> None:
             section_id=section.section_id,
             verdict=ReviewVerdict.APPROVE,
             rationale="First-slice owner review.",
-        )
+        ),
+        principal=HUMAN,
     )
     assert review.verdict is ReviewVerdict.APPROVE
     built = workspace.build_release_candidate(ReleaseCreate(section_ids=[section.section_id]))
@@ -135,7 +145,7 @@ def test_http_first_slice_on_shipped_app(tmp_path) -> None:
     assert body["upcoming_event_count"] == 0
     assert body["judge_confirmed"] is False
 
-    package, citation = _approved_package()
+    package, citation = _approved_package(store.load().matter.matter_id)
     imported = client.post(
         "/v1/legal-source-packages:import",
         json=package.model_dump(mode="json"),
@@ -178,7 +188,7 @@ def test_http_first_slice_on_shipped_app(tmp_path) -> None:
             "reviewer": "owner",
         },
     )
-    assert reviewed.status_code == 200, reviewed.text
+    assert reviewed.status_code == 403, reviewed.text
     released = client.post("/v1/releases", json={"section_ids": [section_id]})
     assert released.status_code == 200
-    assert released.json()["blocked"] is False
+    assert released.json()["blocked"] is True

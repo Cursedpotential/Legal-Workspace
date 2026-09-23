@@ -24,8 +24,8 @@ def test_reload_from_disk_keeps_import_factor_and_draft(tmp_path) -> None:
     assertion_id = uuid4()
     package = LegalSourcePackage(
         package_id=uuid4(),
-        manifest_hash="sha256:persist",
-        matter_id=uuid4(),
+        manifest_hash="sha256:" + "a" * 64,
+        matter_id=first.load().matter.matter_id,
         created_at=datetime.now(UTC),
         items=[
             LegalSourcePackageItem(
@@ -34,7 +34,7 @@ def test_reload_from_disk_keeps_import_factor_and_draft(tmp_path) -> None:
                 assertion_version=1,
                 span_locator="span:1",
                 custody_locator="h1:1",
-                content_hash="sha256:1",
+                content_hash="sha256:" + "b" * 64,
                 review_state=ReviewState.APPROVED,
             )
         ],

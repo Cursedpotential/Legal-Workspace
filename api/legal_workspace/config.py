@@ -42,6 +42,9 @@ class Settings(BaseSettings):
     authentik_audience: str = Field(default="", alias="AUTHENTIK_AUDIENCE")
     authentik_jwks_url: str = Field(default="", alias="AUTHENTIK_JWKS_URL")
     authentik_allowed_groups: str = Field(default="", alias="AUTHENTIK_ALLOWED_GROUPS")
+    authentik_review_groups: str = Field(
+        default="advocatio-users", alias="AUTHENTIK_REVIEW_GROUPS"
+    )
     legal_bff_signing_secret: str = Field(default="", alias="LEGAL_BFF_SIGNING_SECRET")
     mcp_gateway_token: str = Field(default="", alias="LEGAL_MCP_GATEWAY_TOKEN")
     tailnet_owner_access: bool = Field(default=True, alias="LEGAL_TAILNET_OWNER_ACCESS")
