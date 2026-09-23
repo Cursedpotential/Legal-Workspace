@@ -1,9 +1,9 @@
 # Advocatio adoption authorization merge and deployment receipt
 
-**Byline:** Codex · GPT-6 · independent integration reviewer  
-**Date:** 2026-09-23 (America/New_York)  
-**Repository:** `E:/AI_Workspace/Projects/Propria/modules/Legal-desktop`  
-**Remote:** `https://github.com/Cursedpotential/Legal-Workspace.git`  
+**Byline:** Codex · GPT-6 · independent integration reviewer
+**Date:** 2026-09-23 (America/New_York)
+**Repository:** `E:/AI_Workspace/Projects/Propria/modules/Legal-desktop`
+**Remote:** `https://github.com/Cursedpotential/Legal-Workspace.git`
 **Result:** merged and deployed with a public Authentik ingress hold
 
 ## Reviewed source and integration
