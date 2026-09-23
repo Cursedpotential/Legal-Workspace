@@ -17,6 +17,7 @@ from legal_workspace.contracts.source_package import (
 )
 from legal_workspace.domain.factors import FactorCitationLink, FactorLetter
 from legal_workspace.services.workspace import Workspace
+from conftest import seed_synthetic_approved_package
 
 
 def test_reload_from_disk_keeps_import_factor_and_draft(tmp_path) -> None:
@@ -46,7 +47,7 @@ def test_reload_from_disk_keeps_import_factor_and_draft(tmp_path) -> None:
         assertion_version=1,
         span_locator="span:1",
     )
-    first.import_package(package)
+    seed_synthetic_approved_package(first, package)
     first.attach_factor_citation(
         FactorCitationLink(
             letter=FactorLetter.J,

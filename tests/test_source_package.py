@@ -30,7 +30,7 @@ def _item(state: ReviewState) -> LegalSourcePackageItem:
     )
 
 
-def test_import_drops_unapproved_candidates_and_keeps_approved() -> None:
+def test_import_reports_omissions_but_blocks_unverified_approved_items() -> None:
     approved = _item(ReviewState.APPROVED)
     candidate = _item(ReviewState.CANDIDATE)
     revoked = _item(ReviewState.REVOKED)
@@ -44,8 +44,9 @@ def test_import_drops_unapproved_candidates_and_keeps_approved() -> None:
 
     result = import_legal_source_package(package)
 
-    assert result.blocked is False
-    assert [item.item_id for item in result.accepted.items] == [approved.item_id]
+    assert result.blocked is True
+    assert result.accepted.items == []
+    assert "D08 producer evidence unavailable" in (result.reason or "")
     assert set(result.omitted_item_ids) == {str(candidate.item_id), str(revoked.item_id)}
 
 
@@ -127,4 +128,20 @@ def test_consumer_rejects_invalid_item_without_storage_change(
     with pytest.raises(ValueError, match=message):
         workspace.import_package(package)
 
+    assert {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()} == before
+
+
+def test_valid_looking_manifest_digest_cannot_adopt_changed_approved_payload(tmp_path) -> None:
+    workspace = Workspace(tmp_path)
+    package = _valid_package(workspace.load().matter.matter_id)
+    before = {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()}
+    original = workspace.import_package(package)
+    changed = package.model_copy(deep=True)
+    changed.items[0].span_locator = "source:message:tampered"
+    changed.manifest_hash = "sha256:" + "c" * 64
+    tampered = workspace.import_package(changed)
+    assert original.blocked is True
+    assert tampered.blocked is True
+    assert original.accepted.items == tampered.accepted.items == []
+    assert "D08 producer evidence unavailable" in (tampered.reason or "")
     assert {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()} == before

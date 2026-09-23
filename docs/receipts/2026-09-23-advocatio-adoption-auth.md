@@ -179,3 +179,80 @@ After integration, a faulty commit can be reverted on the owning branch with
 an ordinary `git revert` and redeployed from its configured source; no reset,
 force push, or deletion is required. The earlier "do not push" checkpoint was
 superseded by the owner's later explicit push authorization for this lane.
+
+## Independent HOLD remediation candidate — 2026-09-23
+
+**Byline:** Codex · GPT-6 · Tailnet and package-consumer remediation lane
+**Parent candidate:** `wip/advocatio-adoption-auth-20260923@7e3fcd68e3351be91647c883020744a06ce92c23`
+**Branch:** `fix/advocatio-tailnet-manifest-20260923`
+**Scope:** API auth ordering, fail-closed package inspection, focused tests, and this receipt.
+
+The independent review found that the browser `ReviewForm` calls the same-origin
+Next bridge, which sends an ordinary signed BFF request when no Authentik JWT is
+present. A BFF signature proves the bridge, not the person using it. The API
+therefore still denies review by `signed-bff`, service credentials, direct Tailnet
+device access, and caller-supplied Tailscale identity headers. The review route
+gives a specific `Tailnet human attestation required` error for a direct Tailnet
+device principal. Any presented bearer credential is now processed before the
+Tailnet socket fallback. An invalid Authentik JWT on a Tailnet peer returns 401;
+a valid, eligible Authentik JWT keeps its verified human subject and can review.
+No second login is added to the Tailnet path, but Tailnet-only review remains
+held until a verified human principal can be supplied.
+
+### Claude ingress handoff: no-login Tailnet human identity
+
+The current checked-in Next bridge and deployment material do not establish a
+trusted identity path from Tailscale Serve into the web container. Tailscale
+documents `Tailscale-User-Login` as a Serve-added user identity header, stripped
+and replaced by Serve, absent for tagged devices, and also present for shared
+external users. It explicitly warns that a backend reachable outside Serve can
+accept forged values. See [Tailscale Serve identity headers](https://tailscale.com/docs/features/tailscale-serve).
+
+Before enabling Tailnet review, Claude's portal/Tailscale-services lane must
+prove the actual deployed ingress chain and isolate a Serve-only endpoint from
+direct LAN, Tailnet IP, public Traefik, container-network, and other local
+callers. The human identity must originate at Serve's verified request context,
+reach the Next bridge only across a protected trust path, and bind to the exact
+request that the BFF forwards to the API. The bridge and API then need an
+explicit owner/eligible-user mapping, including treatment of shared users and
+tagged devices, and a stable audit subject. Raw `Tailscale-User-Login`,
+`X-Forwarded-*`, host, BFF signature, or Tailnet source IP alone must not become
+that subject. This candidate intentionally specifies no new header/signature
+format or production secret because no deployed ingress contract was verified.
+Claude should provide the route/config/readback and a forged-header/direct-access
+negative proof before a later implementation can enable Tailnet human review.
+
+### D08 producer evidence hold
+
+The D08 checkpoint under the 2026-09-23 orchestration input labels the producer
+issuer, exact schema/digest recipe, signed/current status receipt, and delivery
+boundary unresolved. The current `LegalSourcePackage` contract carries an
+unverified caller-supplied `manifest_hash`; no authoritative producer algorithm
+or issuer was located in the inspected current Probata/Advocatio source. The
+consumer retains envelope checks for matter, schema, IDs, and digest syntax, and
+the inspection result still reports omitted unapproved item IDs. Every package
+containing `APPROVED` items now returns `blocked=true`, zero accepted items, and
+an explicit D08 reason before any workspace or event write. A changed payload
+with another valid-looking SHA-256 is denied with byte-identical persisted state.
+This hold is not a claim that the supplied digest is false; it is a statement
+that its value and the claimed approval cannot be independently verified yet.
+
+The D08 owner must supply an authoritative versioned producer contract, exact
+canonical bytes and SHA-256 computation, issuer trust root/signature or an
+independent authenticated readback, current approval/revocation status, and
+fixtures for tampered payload, wrong issuer/matter/version/span, replay, and
+revocation. Only then can a consumer verifier replace this block. Synthetic
+downstream unit tests seed fixture workspace state directly and never use that
+helper in the production import path; HTTP import tests assert the hold.
+
+**Local verification:** `.venv/Scripts/python.exe -m pytest -q` completed with
+181 passed, 1 expected failure, and one pytest-asyncio deprecation warning.
+Targeted Ruff passed for both production modules and the new fixture/auth/package
+tests. System `mypy` passed on both changed production modules; the repository
+virtual environment does not include mypy. `git diff --check` passed. The
+official local Gitleaks 8.30.0 staged scan with `--redact=100` found no leaks;
+the final outbound-commit scan follows the commit. These checks are local and
+do not prove the deployed proxy contract or D08 producer authenticity.
+
+**Rollback:** revert this branch commit if integration review rejects it; the
+parent candidate and the pre-existing `.cnf/` and receipt backup remain intact.

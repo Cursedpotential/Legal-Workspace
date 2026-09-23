@@ -1,6 +1,7 @@
 """Import and validate LegalSourcePackage objects.
 
 > _Byline: Grok · grok-4.6 · 2026-08-18_
+> _Producer-evidence hold: Codex · GPT-6 · 2026-09-23_
 """
 
 from __future__ import annotations
@@ -48,11 +49,11 @@ class ImportResult:
 
 
 def import_legal_source_package(package: LegalSourcePackage) -> ImportResult:
-    """Keep only Evidence-Platform-approved items.
+    """Inspect eligibility without claiming an unverified producer package.
 
-    Candidates, revoked, and quarantined rows are omitted and recorded.
-    An empty remaining package is blocked — legal work cannot start on
-    unapproved material.
+    D08 has not supplied an issuer, canonical manifest digest algorithm, or
+    verifiable status receipt. A syntactically valid digest is caller input,
+    so even APPROVED rows cannot be installed as usable legal evidence.
     """
     omitted = [
         str(item.item_id)
@@ -62,16 +63,17 @@ def import_legal_source_package(package: LegalSourcePackage) -> ImportResult:
     accepted_items = [
         item for item in package.items if item.review_state is ReviewState.APPROVED
     ]
-    accepted = package.model_copy(update={"items": accepted_items})
+    inspected = package.model_copy(update={"items": []})
     if not accepted_items:
         return ImportResult(
-            accepted=accepted,
+            accepted=inspected,
             omitted_item_ids=tuple(omitted),
             blocked=True,
             reason="no approved items in package",
         )
     return ImportResult(
-        accepted=accepted,
+        accepted=inspected,
         omitted_item_ids=tuple(omitted),
-        blocked=False,
+        blocked=True,
+        reason="D08 producer evidence unavailable: approved package manifest and status cannot be independently verified",
     )

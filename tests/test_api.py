@@ -70,8 +70,9 @@ def test_import_endpoint_omits_candidates(tmp_path, client_with_auth) -> None:
     response = client.post("/v1/legal-source-packages:import", json=payload)
     assert response.status_code == 200
     body = response.json()
-    assert body["blocked"] is False
-    assert body["accepted_item_count"] == 1
+    assert body["blocked"] is True
+    assert body["accepted_item_count"] == 0
+    assert "D08 producer evidence unavailable" in body["reason"]
     assert len(body["omitted_item_ids"]) == 1
 
 

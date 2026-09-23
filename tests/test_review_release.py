@@ -26,6 +26,7 @@ from legal_workspace.domain.review import ReviewCreate, ReviewVerdict
 from legal_workspace.domain.work_product import WorkProductState
 from legal_workspace.services import workspace as workspace_mod
 from legal_workspace.services.workspace import Workspace
+from conftest import seed_synthetic_approved_package
 
 HUMAN = AuthenticatedPrincipal(
     subject="owner-subject",
@@ -87,7 +88,7 @@ def _approved_package(matter_id=None) -> tuple[LegalSourcePackage, EvidenceCitat
 
 def _drafted(workspace: Workspace):
     package, citation = _approved_package(workspace.load().matter.matter_id)
-    workspace.import_package(package)
+    seed_synthetic_approved_package(workspace, package)
     workspace.attach_factor_citation(
         FactorCitationLink(
             letter=FactorLetter.J,

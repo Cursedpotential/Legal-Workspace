@@ -3,11 +3,11 @@
 The public human UI is protected by Authentik at Traefik. The Next.js BFF
 forwards Authentik's signed identity JWT; this module validates its signature,
 issuer, audience and lifetime before any legal-domain route runs. Direct
-requests observed on the tailnet retain the owner's pre-existing unrestricted
-access. The BFF can also authenticate server-rendered/tailnet UI calls with a
-short-lived request signature whose secret never reaches browser code.
+requests observed on the tailnet retain device-level access. Neither a tailnet
+address nor the BFF request signature establishes a human review actor.
 
 Byline: Codex · GPT-5 · 2026-09-12
+Auth ordering amendment: Codex · GPT-6 · 2026-09-23
 """
 
 from __future__ import annotations
@@ -61,7 +61,7 @@ def require_human_review_actor(
     *,
     settings: Settings | None = None,
 ) -> str:
-    """Return a stable audit actor only for an eligible Authentik human.
+    """Return a stable audit actor only for an eligible verified human.
 
     Gateway, BFF, network/device, bypass, and agent identities authenticate a
     transport or service. They do not prove that a human adopted legal work.
@@ -73,6 +73,10 @@ def require_human_review_actor(
         for item in current.authentik_review_groups.split(",")
         if item.strip()
     }
+    if principal.source == "tailnet":
+        raise PrincipalAuthorizationDenied(
+            "Tailnet human attestation required for review; contact the ingress owner"
+        )
     if principal.source != "authentik":
         raise PrincipalAuthorizationDenied(
             "an eligible authenticated human must record the review verdict"
@@ -254,18 +258,35 @@ class LegalWorkspaceAuthMiddleware(BaseHTTPMiddleware):
             )
             return await call_next(request)
 
-        if settings.tailnet_owner_access and _direct_tailnet_client(request):
-            request.state.auth = AuthenticatedPrincipal(
-                subject="tailnet-owner",
-                username=None,
-                email=None,
-                groups=(),
-                source="tailnet",
-            )
-            return await call_next(request)
-
         try:
-            if await _verify_bff_signature(request, settings):
+            # A presented credential must be checked before any network fallback.
+            # In particular, an invalid Authentik JWT from a tailnet peer cannot
+            # become a device principal by changing the source ordering.
+            authorization = request.headers.get("authorization")
+            if authorization is not None:
+                token = _bearer_token(authorization)
+                if token is None:
+                    raise AuthenticationDenied("invalid authorization header")
+                if _is_mcp_gateway_token(token, settings):
+                    request.state.auth = AuthenticatedPrincipal(
+                        subject="contextforge-gateway",
+                        username=None,
+                        email=None,
+                        groups=(),
+                        source="mcp-gateway",
+                    )
+                else:
+                    request.state.auth = AuthentikTokenVerifier(settings).verify(token)
+                return await call_next(request)
+
+            bff_headers = (
+                "x-legal-bff-timestamp",
+                "x-legal-bff-nonce",
+                "x-legal-bff-signature",
+            )
+            if any(name in request.headers for name in bff_headers):
+                if not await _verify_bff_signature(request, settings):
+                    raise AuthenticationDenied("invalid BFF signature")
                 request.state.auth = AuthenticatedPrincipal(
                     subject="legal-web-bff",
                     username=None,
@@ -275,20 +296,16 @@ class LegalWorkspaceAuthMiddleware(BaseHTTPMiddleware):
                 )
                 return await call_next(request)
 
-            token = _bearer_token(request.headers.get("authorization"))
-            if token is None:
-                raise AuthenticationDenied("authentication required")
-            if _is_mcp_gateway_token(token, settings):
+            if settings.tailnet_owner_access and _direct_tailnet_client(request):
                 request.state.auth = AuthenticatedPrincipal(
-                    subject="contextforge-gateway",
+                    subject="tailnet-device",
                     username=None,
                     email=None,
                     groups=(),
-                    source="mcp-gateway",
+                    source="tailnet",
                 )
                 return await call_next(request)
-            request.state.auth = AuthentikTokenVerifier(settings).verify(token)
-            return await call_next(request)
+            raise AuthenticationDenied("authentication required")
         except AuthenticationUnavailable as exc:
             return JSONResponse(status_code=503, content={"detail": str(exc)})
         except AuthenticationDenied:

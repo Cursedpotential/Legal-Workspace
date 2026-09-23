@@ -26,6 +26,7 @@ from legal_workspace.domain.exhibits import (
 )
 from legal_workspace.services import workspace as workspace_mod
 from legal_workspace.services.workspace import Workspace
+from conftest import seed_synthetic_approved_package
 
 
 def _package(matter_id=None) -> LegalSourcePackage:
@@ -66,7 +67,7 @@ def test_blank_workspace_has_no_exhibits_or_bates(tmp_path) -> None:
 def test_candidates_are_approved_package_items_only(tmp_path) -> None:
     workspace = Workspace(tmp_path)
     package = _package(workspace.load().matter.matter_id)
-    imported = workspace.import_package(package)
+    imported = seed_synthetic_approved_package(workspace, package)
     assert imported.blocked is False
     rows = workspace.list_exhibits()
     assert len(rows) == 1
@@ -79,7 +80,7 @@ def test_candidates_are_approved_package_items_only(tmp_path) -> None:
 
 def test_annotation_persists_and_unknown_item_is_rejected(tmp_path) -> None:
     workspace = Workspace(tmp_path)
-    imported = workspace.import_package(_package(workspace.load().matter.matter_id))
+    imported = seed_synthetic_approved_package(workspace, _package(workspace.load().matter.matter_id))
     item_id = imported.accepted.items[0].item_id
     annotated = workspace.annotate_exhibit(
         ExhibitAnnotationCreate(
@@ -120,6 +121,9 @@ def test_http_exhibits(tmp_path) -> None:
         json=package.model_dump(mode="json"),
     )
     assert imported.status_code == 200
+    assert imported.json()["blocked"] is True
+    assert client.get("/v1/exhibits").json() == []
+    seed_synthetic_approved_package(store, package)
     listed = client.get("/v1/exhibits")
     assert listed.status_code == 200
     rows = listed.json()
@@ -152,7 +156,7 @@ def test_bates_sequence_is_owner_triggered_not_seeded(tmp_path) -> None:
     assert next_bates_number("GENESEE", ["GENESEE-000001", "OWNER-12"]) == "GENESEE-000002"
     assert bates_prefix("Genesee County custody matter").startswith("GENESEE")
     workspace = Workspace(tmp_path)
-    imported = workspace.import_package(_package(workspace.load().matter.matter_id))
+    imported = seed_synthetic_approved_package(workspace, _package(workspace.load().matter.matter_id))
     item_id = imported.accepted.items[0].item_id
     assert workspace.list_exhibits()[0].bates_number == ""
     stamped = workspace.assign_bates(item_id)

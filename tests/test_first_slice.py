@@ -25,6 +25,7 @@ from legal_workspace.domain.review import ReviewCreate, ReviewVerdict
 from legal_workspace.api import main as main_mod
 from legal_workspace.services import workspace as workspace_mod
 from legal_workspace.services.workspace import Workspace
+from conftest import seed_synthetic_approved_package
 
 HUMAN = AuthenticatedPrincipal(
     subject="owner-subject",
@@ -86,7 +87,10 @@ def test_workspace_walks_matter_import_factor_draft_gate(tmp_path) -> None:
 
     package, citation = _approved_package(home.matter.matter_id)
     imported = workspace.import_package(package)
-    assert imported.blocked is False
+    assert imported.blocked is True
+    assert "D08 producer evidence unavailable" in (imported.reason or "")
+    assert workspace.load().package is None
+    imported = seed_synthetic_approved_package(workspace, package)
     assert len(imported.accepted.items) == 1
     assert len(imported.omitted_item_ids) == 1
 
@@ -151,7 +155,11 @@ def test_http_first_slice_on_shipped_app(tmp_path) -> None:
         json=package.model_dump(mode="json"),
     )
     assert imported.status_code == 200
-    assert imported.json()["accepted_item_count"] == 1
+    assert imported.json()["blocked"] is True
+    assert imported.json()["accepted_item_count"] == 0
+    assert "D08 producer evidence unavailable" in imported.json()["reason"]
+    assert store.load().package is None
+    seed_synthetic_approved_package(store, package)
 
     linked = client.post(
         "/v1/factors/j/citations",

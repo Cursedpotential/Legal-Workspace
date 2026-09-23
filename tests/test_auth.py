@@ -279,6 +279,87 @@ def test_direct_tailnet_owner_access_remains_unfettered(secure_auth) -> None:
     assert response.json()["source"] == "tailnet"
 
 
+def test_tailnet_peer_with_authentik_jwt_keeps_verified_human_identity(
+    secure_auth, monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    workspace = Workspace(tmp_path)
+    section = _drafted(workspace)
+    monkeypatch.setattr(main_mod, "WORKSPACE", workspace)
+    client = TestClient(app, client=("100.100.10.20", 41200))
+    bearer = {"authorization": f"Bearer {_token(secure_auth)}"}
+    whoami = client.get("/v1/auth/whoami", headers=bearer)
+    assert whoami.status_code == 200
+    assert whoami.json()["source"] == "authentik"
+    review = client.post(
+        "/v1/reviews",
+        headers=bearer,
+        json={
+            "section_id": str(section.section_id),
+            "verdict": "approve",
+            "rationale": "verified human through the BFF bearer path",
+            "reviewer": "forged-owner",
+        },
+    )
+    assert review.status_code == 200, review.text
+    assert review.json()["reviewer"] == "authentik:owner-subject"
+
+
+def test_tailnet_peer_cannot_downgrade_bad_jwt_or_claim_human_with_headers(
+    secure_auth, monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    workspace = Workspace(tmp_path)
+    section = _drafted(workspace)
+    monkeypatch.setattr(main_mod, "WORKSPACE", workspace)
+    body = {
+        "section_id": str(section.section_id),
+        "verdict": "approve",
+        "rationale": "forged identity probe",
+        "reviewer": "owner",
+    }
+    client = TestClient(app, client=("100.100.10.20", 41200))
+    before = {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()}
+    forged = {"tailscale-user-login": "owner@example.test"}
+    invalid_jwt = client.post(
+        "/v1/reviews", headers={**forged, "authorization": "Bearer bad-jwt"}, json=body
+    )
+    assert invalid_jwt.status_code == 401
+    device_only = client.post("/v1/reviews", headers=forged, json=body)
+    assert device_only.status_code == 403
+    assert "Tailnet human attestation required" in device_only.json()["detail"]
+    assert {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()} == before
+
+
+def test_signed_bff_and_service_credentials_cannot_use_forged_tailnet_identity(
+    secure_auth, monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    workspace = Workspace(tmp_path)
+    section = _drafted(workspace)
+    monkeypatch.setattr(main_mod, "WORKSPACE", workspace)
+    body = json.dumps({
+        "section_id": str(section.section_id),
+        "verdict": "approve",
+        "rationale": "service and BFF identity probe",
+        "reviewer": "owner",
+    }).encode()
+    before = {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()}
+    forged = {"tailscale-user-login": "owner@example.test", "content-type": "application/json"}
+    bff = TestClient(app).post(
+        "/v1/reviews",
+        headers={**forged, **_signed_bff_headers("POST", "/v1/reviews", body)},
+        content=body,
+    )
+    assert bff.status_code == 403
+    service_token = "gateway-" + "k" * 40
+    monkeypatch.setenv("LEGAL_MCP_GATEWAY_TOKEN", service_token)
+    service = TestClient(app).post(
+        "/v1/reviews",
+        headers={**forged, "authorization": f"Bearer {service_token}"},
+        content=body,
+    )
+    assert service.status_code == 403
+    assert {path.name: path.read_bytes() for path in tmp_path.iterdir() if path.is_file()} == before
+
+
 def test_forwarded_tailnet_address_does_not_bypass_socket_check(secure_auth) -> None:
     response = TestClient(app).get(
         "/v1/auth/whoami",

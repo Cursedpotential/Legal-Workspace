@@ -14,6 +14,7 @@ from legal_workspace.domain.review import ReviewCreate, ReviewVerdict
 from legal_workspace.domain.templates import TemplateInstantiate
 from legal_workspace.services import workspace as workspace_mod
 from legal_workspace.services.workspace import Workspace
+from conftest import seed_synthetic_approved_package
 from test_first_slice import _approved_package
 
 HUMAN = AuthenticatedPrincipal(
@@ -38,7 +39,7 @@ def test_edit_updates_unreleased_draft(tmp_path) -> None:
 def test_edit_of_released_section_forks(tmp_path) -> None:
     workspace = Workspace(tmp_path)
     package, citation = _approved_package(workspace.load().matter.matter_id)
-    workspace.import_package(package)
+    seed_synthetic_approved_package(workspace, package)
     workspace.attach_factor_citation(
         FactorCitationLink(
             letter=FactorLetter.J,

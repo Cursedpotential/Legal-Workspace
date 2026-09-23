@@ -12,6 +12,7 @@ from legal_workspace.domain.filing import CheckState, FilingOverrideCreate
 from legal_workspace.services import workspace as workspace_mod
 from legal_workspace.services.workspace import Workspace
 from test_first_slice import _approved_package
+from conftest import seed_synthetic_approved_package
 
 
 def test_blank_matter_is_not_ready(tmp_path) -> None:
@@ -73,7 +74,7 @@ def test_http_filing_readiness(tmp_path) -> None:
 def test_filing_calls_agno_verify_and_fails_closed_when_unreachable(tmp_path) -> None:
     workspace = Workspace(tmp_path)
     package, _citation = _approved_package(workspace.load().matter.matter_id)
-    workspace.import_package(package)
+    seed_synthetic_approved_package(workspace, package)
 
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(503)
@@ -92,7 +93,7 @@ def test_filing_agno_verify_pass_when_agno_returns_intact(tmp_path) -> None:
     package, _citation = _approved_package(workspace.load().matter.matter_id)
     hex_digest = "ab" * 32
     package.items[0].content_hash = f"sha256:{hex_digest}"
-    workspace.import_package(package)
+    seed_synthetic_approved_package(workspace, package)
 
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.method == "POST"
