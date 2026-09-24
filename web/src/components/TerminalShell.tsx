@@ -12,21 +12,17 @@ import {
 } from "@/components/SplitWorkspace";
 import { fetchAgnoStatus, legalApiBase } from "@/lib/api/client";
 import {
-  CASE_PHASE_KEY,
-  CASE_PHASES,
-  type CasePhase,
   type Surface,
-  compareSurfacesByPhase,
-  isCasePhase,
-  isPhasePriority,
   navHelp,
   navLabel,
   pathForQuery,
-  PHASE_COPY,
   surfaceForPath,
-  surfacesForPhase,
 } from "@/lib/surfaces";
 import { captureLiveSurface, liveSurfaceKey } from "@/lib/liveSurface";
+import {
+  groupSurfacesByTaskNavigation,
+  taskNavigationGroupForSurface,
+} from "@/lib/taskNavigation";
 import { useSurfaceCatalog } from "@/lib/useSurfaceCatalog";
 
 // Byline: Grok · grok-4.6 · 2026-08-18
@@ -62,21 +58,17 @@ function persistPin(path: string | null) {
   }
 }
 
-function readStoredPhase(): CasePhase {
-  if (typeof window === "undefined") return "Discovery";
+function readStoredTaskNavigation(): Record<string, boolean> {
+  if (typeof window === "undefined") return {};
   try {
-    const raw = window.sessionStorage.getItem(CASE_PHASE_KEY);
-    return isCasePhase(raw) ? raw : "Discovery";
+    const raw = window.sessionStorage.getItem("lw-task-navigation");
+    const parsed = raw ? (JSON.parse(raw) as unknown) : {};
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return Object.fromEntries(
+      Object.entries(parsed).filter(([, value]) => typeof value === "boolean"),
+    );
   } catch {
-    return "Discovery";
-  }
-}
-
-function persistPhase(phase: CasePhase) {
-  try {
-    window.sessionStorage.setItem(CASE_PHASE_KEY, phase);
-  } catch {
-    /* private mode */
+    return {};
   }
 }
 
@@ -89,28 +81,40 @@ function postSplitToParent(action: "close" | "toggle") {
 }
 
 function Sidebar({
-  phase,
-  onPhaseChange,
   surfaces,
   confidential,
   onConfidentialToggle,
 }: {
-  phase: CasePhase;
-  onPhaseChange: (phase: CasePhase) => void;
   surfaces: Surface[];
   confidential: boolean;
   onConfidentialToggle: () => void;
 }) {
   const pathname = usePathname();
-  const groups = useMemo(() => {
-    const map = new Map<string, Surface[]>();
-    for (const item of surfacesForPhase(phase, surfaces)) {
-      const list = map.get(item.group) ?? [];
-      list.push(item);
-      map.set(item.group, list);
-    }
-    return [...map.entries()];
-  }, [surfaces, phase]);
+  const groups = useMemo(() => groupSurfacesByTaskNavigation(surfaces), [surfaces]);
+  const activeGroup = taskNavigationGroupForSurface(surfaceForPath(pathname, surfaces));
+  const [expanded, setExpanded] = useState<Record<string, boolean>>(() => ({
+    [activeGroup]: true,
+  }));
+
+  useEffect(() => {
+    setExpanded((current) => ({ ...readStoredTaskNavigation(), ...current, [activeGroup]: true }));
+  }, []);
+
+  useEffect(() => {
+    setExpanded((current) => ({ ...current, [activeGroup]: true }));
+  }, [activeGroup]);
+
+  function toggleGroup(label: string, open: boolean) {
+    setExpanded((current) => {
+      const next = { ...current, [label]: open };
+      try {
+        window.sessionStorage.setItem("lw-task-navigation", JSON.stringify(next));
+      } catch {
+        /* private mode */
+      }
+      return next;
+    });
+  }
 
   return (
     <aside className="sidebar">
@@ -121,28 +125,24 @@ function Sidebar({
           <div className="sidebar-brand-subtitle">Legal Workdesk · Genesee County</div>
         </div>
       </div>
-      <CasePhaseSwitcher phase={phase} onChange={onPhaseChange} />
       <nav className="sidebar-nav-scroll">
         {groups.map(([label, items]) => {
-          const emphasized = surfaces.some(
-            (item) => item.group === label && isPhasePriority(item.path, phase),
-          );
+          if (label === "Case overview") {
+            return items.map((item) => (
+              <a key={item.path} href={item.path} title={navHelp(item)} aria-current={pathname === item.path ? "page" : undefined} className={`sidebar-item${pathname === item.path ? " active" : ""}`}>
+                <span className="sidebar-item-label">{navLabel(item)}</span>
+              </a>
+            ));
+          }
           return (
-            <div key={label}>
-              <div className={`sidebar-group-label${emphasized ? " emphasized" : ""}`}>
-                {label}
-              </div>
+            <details key={label} className="sidebar-group" open={expanded[label] ?? label === activeGroup} onToggle={(event) => toggleGroup(label, event.currentTarget.open)}>
+              <summary className="sidebar-group-label">{label}</summary>
               {items.map((item) => (
-                <a
-                  key={item.path}
-                  href={item.path}
-                  title={navHelp(item)}
-                  className={`sidebar-item${pathname === item.path ? " active" : ""}${isPhasePriority(item.path, phase) ? " phase-hit" : ""}`}
-                >
+                <a key={item.path} href={item.path} title={navHelp(item)} aria-current={pathname === item.path ? "page" : undefined} className={`sidebar-item${pathname === item.path ? " active" : ""}`}>
                   <span className="sidebar-item-label">{navLabel(item)}</span>
                 </a>
               ))}
-            </div>
+            </details>
           );
         })}
       </nav>
@@ -151,32 +151,6 @@ function Sidebar({
         <div>Planning tool only — not a court filing.</div>
       </div>
     </aside>
-  );
-}
-
-function CasePhaseSwitcher({
-  phase,
-  onChange,
-}: {
-  phase: CasePhase;
-  onChange: (phase: CasePhase) => void;
-}) {
-  return (
-    <div className="case-phase-switcher" aria-label="Case phase">
-      <div className="sidebar-group-label">Phase</div>
-      <div className="case-phase-chips">
-        {CASE_PHASES.map((item) => (
-          <button
-            key={item}
-            type="button"
-            className={`case-phase-chip${phase === item ? " active" : ""}`}
-            onClick={() => onChange(item)}
-          >
-            {PHASE_COPY[item].label}
-          </button>
-        ))}
-      </div>
-    </div>
   );
 }
 
@@ -241,7 +215,7 @@ function ConfidentialToggle({ on, onToggle }: { on: boolean; onToggle: () => voi
   );
 }
 
-function CommandLine({ phase, surfaces }: { phase: CasePhase; surfaces: Surface[] }) {
+function CommandLine({ surfaces }: { surfaces: Surface[] }) {
   const router = useRouter();
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
@@ -253,14 +227,8 @@ function CommandLine({ phase, surfaces }: { phase: CasePhase; surfaces: Surface[
             item.label.toLowerCase().includes(needle) ||
             (item.help ?? "").toLowerCase().includes(needle),
         )
-        .sort((a, b) => compareSurfacesByPhase(a, b, phase))
     : [];
-  const hints = surfaces
-    .filter((item) => isPhasePriority(item.path, phase))
-    .sort((a, b) => compareSurfacesByPhase(a, b, phase))
-    .map(navLabel)
-    .slice(0, 4)
-    .join("  ·  ");
+  const hints = surfaces.map(navLabel).slice(0, 4).join("  ·  ");
 
   function execute(raw?: string) {
     const query = (raw ?? value).trim();
@@ -384,12 +352,10 @@ function StatusBar({
 }
 
 function LegalContextStrip({
-  phase,
   current,
   confidential,
   confidentialEnforcement,
 }: {
-  phase: CasePhase;
   current: Surface;
   confidential: boolean;
   confidentialEnforcement: "checking" | "confirmed" | "local-only";
@@ -399,8 +365,6 @@ function LegalContextStrip({
       <div className="legal-context-primary">
         <span className="legal-context-label">Matter</span>
         <strong>Genesee County custody matter</strong>
-        <span className="legal-context-separator" aria-hidden="true">/</span>
-        <span>{PHASE_COPY[phase].label}</span>
         <span className="legal-context-separator" aria-hidden="true">/</span>
         <span>{navLabel(current)}</span>
       </div>
@@ -443,14 +407,8 @@ export function TerminalShell({ children }: { children: ReactNode }) {
   const [embedded] = useState(readEmbedded);
   const [pinReady, setPinReady] = useState(false);
   const [pinnedPath, setPinnedPath] = useState<string | null>(null);
-  const [phase, setPhase] = useState<CasePhase>("Discovery");
   const confidential = useConfidentialMode();
   const isPinned = pinnedPath === pathname;
-
-  const selectPhase = useCallback((next: CasePhase) => {
-    setPhase(next);
-    persistPhase(next);
-  }, []);
 
   const closeSplit = useCallback(() => {
     setPinnedPath(null);
@@ -520,7 +478,6 @@ export function TerminalShell({ children }: { children: ReactNode }) {
     const stored = readStoredPin();
     setPinnedPath((current) => current ?? stored);
     setPinReady(true);
-    setPhase(readStoredPhase());
   }, [embedded]);
 
   useEffect(() => {
@@ -625,18 +582,15 @@ export function TerminalShell({ children }: { children: ReactNode }) {
   return (
     <div className="app-shell pr-app" data-theme="dark">
       <Sidebar
-        phase={phase}
-        onPhaseChange={selectPhase}
         surfaces={surfaces}
         confidential={confidential.on}
         onConfidentialToggle={confidential.toggle}
       />
       <div className="main-column">
         <div className="command-line-bar">
-          <CommandLine phase={phase} surfaces={surfaces} />
+          <CommandLine surfaces={surfaces} />
         </div>
         <LegalContextStrip
-          phase={phase}
           current={current}
           confidential={confidential.on}
           confidentialEnforcement={confidential.enforcement}
@@ -654,7 +608,6 @@ export function TerminalShell({ children }: { children: ReactNode }) {
       <CommandPalette
         open={palette}
         onClose={() => setPalette(false)}
-        phase={phase}
         surfaces={surfaces}
       />
     </div>

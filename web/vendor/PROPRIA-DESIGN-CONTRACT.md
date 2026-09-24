@@ -8,8 +8,9 @@
 - Contract version: `1.0.0`
 - Adoption lane: `SDA-03 advocatio Legal Workdesk`
 
-The `propria-design-contract/` directory is an exact repository-owned copy of the upstream tree at
-the pinned commit. Runtime and build imports resolve only inside this advocatio repository; they do
+The `propria-design-contract/` directory was originally copied from the upstream tree at the pinned commit.
+Its palette and generated CSS were synchronized with Propria design-contract on 2026-09-24
+using Probata application colors, at the owner's direction. The original palette is superseded. Runtime and build imports resolve only inside this advocatio repository; they do
 not reach across repositories into Propria.
 
 To verify the vendored contract itself:

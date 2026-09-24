@@ -124,12 +124,18 @@ textarea { resize: vertical; }
 .sidebar-brand { color: var(--pr-shell-text); font-family: var(--font-serif); font-size: 16px; }
 .sidebar-brand-subtitle { color: color-mix(in srgb, var(--pr-shell-text) 72%, transparent); font-size: 10px; }
 .sidebar-nav-scroll { flex: 1; overflow-y: auto; }
+.sidebar-group { border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
 .sidebar-group-label {
+  list-style: none;
+  cursor: pointer;
   font-size: 11px;
   font-weight: 500;
   color: color-mix(in srgb, var(--pr-shell-text) 62%, transparent);
   padding: 15px 14px 5px;
 }
+.sidebar-group-label::-webkit-details-marker { display: none; }
+.sidebar-group-label::before { content: "▸"; display: inline-block; width: 14px; color: var(--accent-dim); }
+.sidebar-group[open] > .sidebar-group-label::before { content: "▾"; }
 .sidebar-item {
   display: flex;
   align-items: center;
@@ -154,33 +160,6 @@ textarea { resize: vertical; }
 }
 .sidebar-item .cmd { font-family: var(--font-mono); font-size: 10px; color: var(--accent); min-width: 36px; }
 .sidebar-version { font-size: 10px; color: color-mix(in srgb, var(--pr-shell-text) 64%, transparent); padding: 10px 14px 12px; font-family: var(--font-sans); }
-.sidebar-group-label.emphasized { color: var(--accent); }
-.sidebar-item.phase-hit { color: var(--pr-shell-text); }
-.case-phase-switcher {
-  padding: 8px 10px 4px;
-  border-bottom: 1px solid var(--border);
-}
-.case-phase-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 0 4px 6px;
-}
-.case-phase-chip {
-  background: transparent;
-  border: 1px solid var(--border-bright);
-  color: color-mix(in srgb, var(--pr-shell-text) 72%, transparent);
-  font-size: 10px;
-  min-height: 28px;
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  width: auto;
-}
-.case-phase-chip.active {
-  background: var(--accent-faint);
-  border-color: var(--accent-dim);
-  color: var(--accent);
-}
 
 .main-column { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 .command-line-bar {

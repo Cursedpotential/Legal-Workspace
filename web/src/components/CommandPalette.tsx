@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import {
-  type CasePhase,
   type Surface,
   SURFACES,
   navHelp,
   navLabel,
-  surfacesForPhase,
 } from "@/lib/surfaces";
 
 // Byline: Grok · grok-4.6 · 2026-08-18
@@ -19,18 +17,16 @@ const RECENT_KEY = "lw-recent-pages";
 export function CommandPalette({
   open,
   onClose,
-  phase,
   surfaces = SURFACES,
 }: {
   open: boolean;
   onClose: () => void;
-  phase: CasePhase;
   surfaces?: Surface[];
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [recent, setRecent] = useState<string[]>([]);
-  const modules = useMemo(() => surfacesForPhase(phase, surfaces), [surfaces, phase]);
+  const modules = surfaces;
 
   useEffect(() => {
     if (!open) {
