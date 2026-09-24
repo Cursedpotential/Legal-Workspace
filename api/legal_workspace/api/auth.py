@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import ipaddress
+import re
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
@@ -245,6 +246,24 @@ class LegalWorkspaceAuthMiddleware(BaseHTTPMiddleware):
         call_next: Callable[[Request], Awaitable[Response]],
     ) -> Response:
         if request.url.path == "/health":
+            return await call_next(request)
+
+        # Collabora callbacks carry a document-scoped capability, not an Authentik JWT.
+        # Validate before all transport/test bypasses, only on the exact WOPI surface.
+        wopi = re.fullmatch(r"/wopi/files/([^/]+)(?:/contents)?", request.url.path)
+        if wopi:
+            from legal_workspace.api.office_routes import editor, token_for
+            from legal_workspace.services.office_editor import OfficeError
+
+            try:
+                session = editor().authorize(wopi.group(1), token_for(request))
+            except OfficeError:
+                return JSONResponse(status_code=401, content={"detail": "Invalid editor session"},
+                                    headers={"Cache-Control": "no-store"})
+            request.state.auth = AuthenticatedPrincipal(
+                subject=session["actor"], username=None, email=None,
+                groups=(), source="office-session",
+            )
             return await call_next(request)
 
         settings = get_settings()

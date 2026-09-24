@@ -2,6 +2,8 @@
 
 Date: 2026-09-24. Author: Codex. This report reconciles the owner's current direction, recovered commitments, inspected implementation, and recorded integration receipts. It does not replace the 52-requirement register. Implementation recommendations below remain distinguishable from implemented capabilities.
 
+Implementation update later September 24: the durable document service, styled DOCX templates, Collabora bridge and writing workspace have now been implemented and locally tested. Deployment is blocked by the deliberately stopped Docker engine on ovh-app. See the [implementation receipt](../receipts/2026-09-24-office-workspace-implementation.md) for exact proof and remaining gates. The current-state sections below describe the baseline that motivated this work, not a claim that these new components are absent.
+
 ## 1. Finding and required correction
 
 The document workspace is incomplete. The original requirement was a real place to write and edit documents, supported by templates, official forms, suggested edits and native tracked changes. The current application supplies section textareas, coded outline templates, comparison views and an office-to-PDF service. These are useful components, but they do not fulfill that requirement.

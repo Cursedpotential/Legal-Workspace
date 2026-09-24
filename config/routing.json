@@ -28,7 +28,7 @@
     "drafter": {
       "backend": "legal-api",
       "model": "unevaluated-manual",
-      "surface": "Motion writer"
+      "surface": "Documents and writing"
     },
     "citation": {
       "backend": "legal-api",
@@ -72,7 +72,7 @@
     { "path": "/agreements", "label": "Document review", "group": "Drafting", "help": "Read saved drafts side by side and make review notes." },
     { "path": "/documents", "label": "Document viewer", "group": "Contracts", "help": "Open a PDF in the document viewer." },
     { "path": "/confidentiality-check", "label": "Confidentiality check", "group": "Contracts", "help": "Scan a draft or pasted text for sensitive keywords and review matching excerpts." },
-    { "path": "/drafts", "label": "Motion writer", "group": "Drafting", "help": "Create and edit draft sections with linked sources." },
+    { "path": "/drafts", "label": "Documents and writing", "group": "Drafting", "help": "Write, import, and edit office documents with saved versions." },
     { "path": "/templates", "label": "Starting templates", "group": "Drafting", "help": "Choose a starting outline and create a draft." },
     { "path": "/review", "label": "Your review", "group": "Drafting", "help": "Record approval, rejection, or requested changes for a draft section." },
     { "path": "/final-copy", "label": "Final review copy", "group": "Drafting", "help": "Create and inspect a fixed review copy and its manifest." },

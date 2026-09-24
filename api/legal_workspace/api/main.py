@@ -826,6 +826,9 @@ from legal_workspace.api.automation_routes import router as automation_router
 from legal_workspace.api.calendar_routes import router as calendar_router
 from legal_workspace.api.citation_routes import router as citation_router
 from legal_workspace.api.document_routes import router as document_router
+from legal_workspace.api.work_document_routes import router as work_document_router
+from legal_workspace.api.office_template_routes import router as office_template_router
+from legal_workspace.api.office_routes import router as office_router
 from legal_workspace.api.evidence_catalog_routes import router as evidence_catalog_router
 from legal_workspace.api.factor_routes import router as factor_router
 from legal_workspace.api.ops_routes import router as ops_router
@@ -838,6 +841,9 @@ app.include_router(automation_router)
 app.include_router(calendar_router)
 app.include_router(citation_router)
 app.include_router(document_router)
+app.include_router(work_document_router)
+app.include_router(office_template_router)
+app.include_router(office_router)
 app.include_router(ops_router)
 app.include_router(privilege_router)
 app.include_router(factor_router)

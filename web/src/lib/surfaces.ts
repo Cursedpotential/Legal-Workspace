@@ -49,7 +49,7 @@ export const SURFACES: Surface[] = [
   { path: "/documents", label: "Document viewer", group: "Contracts", help: "Open a PDF in the document viewer.", icon: "file" },
   { path: "/file-tools", label: "File tools", group: "Contracts", help: "Inspect file metadata, extract screenshot text, and prepare document conversions.", icon: "search" },
   { path: "/confidentiality-check", label: "Confidentiality check", group: "Contracts", help: "Scan a draft or pasted text for sensitive keywords and review matching excerpts.", icon: "shield" },
-  { path: "/drafts", label: "Motion writer", group: "Drafting", help: "Create and edit draft sections with linked sources.", icon: "pen" },
+  { path: "/drafts", label: "Documents and writing", group: "Drafting", help: "Write, import, and edit office documents with saved versions.", icon: "pen" },
   { path: "/templates", label: "Starting templates", group: "Drafting", help: "Choose a starting outline and create a draft.", icon: "file" },
   { path: "/review", label: "Your review", group: "Drafting", help: "Record approval, rejection, or requested changes for a draft section.", icon: "eye" },
   { path: "/final-copy", label: "Final review copy", group: "Drafting", help: "Create and inspect a fixed review copy and its manifest.", icon: "package" },

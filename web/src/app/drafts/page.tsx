@@ -1,6 +1,7 @@
 // Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 import { DraftEditor } from "@/components/DraftEditor";
 import { TemplateForm } from "@/components/TemplateForm";
+import { DocumentWorkspace } from "@/components/DocumentWorkspace";
 import { fetchDrafts, legalApiBase } from "@/lib/api/client";
 
 export default async function DraftPage() {
@@ -24,10 +25,13 @@ export default async function DraftPage() {
 
   return (
     <>
-      <h1 className="legal">Motion writer</h1>
+      <h1 className="legal">Documents and writing</h1>
       <p>
-        Start from an outline, then edit and save each draft section. Expand citation support to see which paragraphs need support.
+        Write a document, open an existing file, or start from an editable template.
       </p>
+      <DocumentWorkspace />
+      <details style={{ marginTop: 24 }}>
+      <summary>Earlier section drafts and outlines</summary>
       {error ? <p>{error}</p> : null}
       <details open={drafts.length === 0} className="surface-card">
         <summary>Start a draft from an outline</summary>
@@ -72,6 +76,7 @@ export default async function DraftPage() {
           </details>
         </article>
       ))}
+      </details>
     </>
   );
 }
