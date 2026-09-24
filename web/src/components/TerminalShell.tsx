@@ -148,7 +148,6 @@ function Sidebar({
       </nav>
       <div className="sidebar-version">
         <ConfidentialToggle on={confidential} onToggle={onConfidentialToggle} />
-        <div>Planning tool only — not a court filing.</div>
       </div>
     </aside>
   );
@@ -365,19 +364,8 @@ function LegalContextStrip({
       <div className="legal-context-primary">
         <span className="legal-context-label">Matter</span>
         <strong>Genesee County custody matter</strong>
-        <span className="legal-context-separator" aria-hidden="true">/</span>
-        <span>{navLabel(current)}</span>
       </div>
-      <div className="legal-context-states" aria-label="Authority and release boundaries">
-        <span className="pr-status" data-pr-status="information">
-          Source policy: LegalSourcePackage only
-        </span>
-        <span className="pr-status" data-pr-status="caution">
-          Currency state: not verified here
-        </span>
-        <span className="pr-status" data-pr-status="caution">
-          Release policy: owner review required
-        </span>
+      <div className="legal-context-states" aria-label="Workspace privacy status">
         <span
           className="pr-status"
           data-pr-status={
@@ -544,8 +532,6 @@ export function TerminalShell({ children }: { children: ReactNode }) {
 
   const header = (
       <div className="module-header">
-        <span className="module-title">{navLabel(current)}</span>
-        <span className="module-subtitle">{navHelp(current)}</span>
       {!embedded ? (
         <>
           <span style={{ flex: 1 }} />

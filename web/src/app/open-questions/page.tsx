@@ -24,15 +24,11 @@ export default async function ResearchPage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-        Open questions
-      </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
-        Plans, adverse notes, uncertainty
+        Research questions and working plans
       </h1>
       <p>
-        Michigan by default. This is not a citator and not an answer. Do not
-        invent holdings or order dates.
+        Record the jurisdiction, research plan, adverse notes, uncertainty, and linked authorities.
       </p>
       {error ? <p>{error}</p> : null}
       <ResearchForm />

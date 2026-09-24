@@ -22,9 +22,13 @@ export default async function PrivilegePage() {
 
   return (
     <>
-      <p className="section-eyebrow">Documents and drafting</p>
       <h1 className="legal">Confidentiality check</h1>
-      <p>Scan for sensitive information in a draft or pasted text.</p>
+      <p>
+        Select a saved draft or paste text to find phrases associated with attorney
+        communications, litigation preparation, case strategy, medical information,
+        and child-identifying details. The keyword scan lists each match with its
+        category and surrounding text so you can review it before sharing.
+      </p>
       {error ? <p>{error}</p> : null}
       <PrivilegeScanForm drafts={drafts} />
       <ProviderTermsGrid grid={grid} error={gridError} />

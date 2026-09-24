@@ -20,7 +20,7 @@ export function ExhibitForm({
   const [busy, setBusy] = useState(false);
 
   if (candidates.length === 0) {
-    return <p>Import an approved LegalSourcePackage. Candidates come only from those items.</p>;
+    return <p>No approved source items are available. Import a LegalSourcePackage first.</p>;
   }
 
   async function submit() {
@@ -85,7 +85,7 @@ export function ExhibitForm({
         />
       </label>
       <label>
-        Bates number (owner-entered; none are seeded)
+        Bates number
         <input
           value={batesNumber}
           onChange={(event) => setBatesNumber(event.target.value)}

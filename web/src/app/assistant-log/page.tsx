@@ -39,16 +39,11 @@ export default async function AgentPage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-        Assistant activity log
-      </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
-        Traces only. Not a finding.
+        Agent run history
       </h1>
       <p>
-        Eight narrow roles. Approve / file / serve intents are recorded as
-        blocked. Change which backend/model each role calls on the routing
-        table below — no framework rewrite.
+        Review assistant requests, the model used, and each run’s result.
       </p>
       {error ? <p>{error}</p> : null}
       {routing ? <RoutingEditor table={routing} /> : null}
@@ -64,7 +59,7 @@ export default async function AgentPage() {
           </strong>
           <p>{run.output}</p>
           <p style={{ color: "var(--text-muted)" }}>
-            model={run.effective_model} · court_safe={String(run.court_safe)}
+            Model: {run.effective_model}
           </p>
         </article>
       ))}

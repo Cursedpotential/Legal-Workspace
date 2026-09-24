@@ -21,16 +21,11 @@ export default async function RedTeamPage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-        Devil's advocate review
-      </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
-        Attack the draft before the other side does
+        Draft challenge results
       </h1>
       <p>
-        Lenses: opposing counsel, neutral judge, FOC/referee, adverse
-        authority, missing proof. Results are private evaluations, not
-        findings of fact.
+        Review stored runs using opposing-counsel, judge, FOC/referee, adverse-authority, and missing-proof lenses.
       </p>
       {error ? <p>{error}</p> : null}
       {runs.length === 0 && !error ? <p>No red-team runs stored yet.</p> : null}
@@ -47,7 +42,9 @@ export default async function RedTeamPage() {
               </li>
             ))}
           </ul>
-          <p style={{ color: "var(--text-muted)" }}>court_safe={String(run.court_safe)}</p>
+          <p style={{ color: "var(--text-muted)" }}>
+            Private critique
+          </p>
         </article>
       ))}
     </>

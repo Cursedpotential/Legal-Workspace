@@ -53,7 +53,6 @@ export default async function IssuePage() {
 
   return (
     <>
-      <p className="section-eyebrow">Research</p>
       <h1 className="legal">Questions the judge decides</h1>
       {error ? <p className="unsupported">{error}</p> : null}
       {issue ? <IssueBranch node={issue} /> : null}

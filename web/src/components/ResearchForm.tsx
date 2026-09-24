@@ -48,7 +48,7 @@ export function ResearchForm() {
       style={{ display: "grid", gap: 10, margin: "16px 0 32px" }}
     >
       <label>
-        Question
+        Research question (required)
         <input
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
@@ -57,7 +57,7 @@ export function ResearchForm() {
         />
       </label>
       <label>
-        Plan
+        Research plan (required)
         <textarea
           value={plan}
           onChange={(event) => setPlan(event.target.value)}
@@ -67,7 +67,7 @@ export function ResearchForm() {
         />
       </label>
       <label>
-        Uncertainty
+        Open uncertainty (optional)
         <textarea
           value={uncertainty}
           onChange={(event) => setUncertainty(event.target.value)}
@@ -77,7 +77,7 @@ export function ResearchForm() {
       </label>
       {error ? <p style={{ color: "var(--status-warn)" }}>{error}</p> : null}
       <button type="submit" disabled={busy || !question.trim() || !plan.trim()}>
-        {busy ? "Saving…" : "Add research question"}
+        {busy ? "Saving…" : "Save research question"}
       </button>
     </form>
   );

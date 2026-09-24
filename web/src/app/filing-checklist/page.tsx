@@ -25,14 +25,11 @@ export default async function FilingPage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-        Filing readiness checklist
-      </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
-        This screen cannot file or serve
+        Review filing readiness
       </h1>
       <p>
-        A green checklist is not a filing. Agents cannot mark anything filed.
+        Review each gate, blocking item, and owner verification requirement before release.
       </p>
       {error ? <p>{error}</p> : null}
       {report ? (

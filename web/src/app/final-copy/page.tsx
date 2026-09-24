@@ -28,15 +28,11 @@ export default async function ReleasePage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-        Final review copy
-      </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
-        Deterministic manifest, not a filing
+        Prepare a final review copy
       </h1>
       <p>
-        Strategy, red-team, todos, and review rationale stay out of the payload.
-        This is not filed, served, or transmitted.
+        Select reviewed draft sections to create a fixed copy with a record of its sources. Any outstanding requirements are listed before it can be created.
       </p>
       {error ? <p>{error}</p> : null}
       <ReleaseForm sections={drafts} />
@@ -50,8 +46,7 @@ export default async function ReleasePage() {
             [{release.state}] {release.content_hash}
           </strong>
           <p>
-            Assertions: {release.cited_assertion_ids.length} · filed=
-            {String(release.filed)}
+            Assertions: {release.cited_assertion_ids.length} · Filed: {release.filed ? "yes" : "no"}
           </p>
           <p style={{ color: "var(--text-muted)" }}>
             omitted: {release.omitted_private.join(", ")}

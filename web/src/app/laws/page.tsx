@@ -24,11 +24,9 @@ export default async function LawsPage() {
 
   return (
     <>
-      <p className="section-eyebrow">Research</p>
       <h1 className="legal">Laws</h1>
       <p>
-        Michigan statutes and rules pinned for this matter. Complete and
-        applicable only. Not citator-verified.
+        Browse the Michigan statutes and rules saved for this matter, including source links and the points they support.
       </p>
       <p>
         {QUICK.map((id) => (

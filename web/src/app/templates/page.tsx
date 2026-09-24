@@ -23,15 +23,11 @@ export default async function TemplatePage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-        Starting templates
-      </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
-        Not official forms. Not filing-ready.
+        Starting templates
       </h1>
       <p>
-        Genesee postjudgment posture only. Dates, docket, and judge stay blank.
-        Official SCAO PDFs stay on the court site.
+        Choose an outline to create an editable draft. Browse each template’s sections and source references before starting.
       </p>
       {error ? <p>{error}</p> : null}
       <TemplateForm templates={templates} />

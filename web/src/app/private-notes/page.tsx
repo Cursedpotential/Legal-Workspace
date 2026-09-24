@@ -29,15 +29,11 @@ export default async function StrategyPage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-        My private notes
-      </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
-        Theories, directions, scratch
+        Working notes and strategy
       </h1>
       <p>
-        This store is not evidence, not authority, and not court-safe. Nothing
-        here is exportable to a filing package.
+        Review private strategy notes and their disclosure status.
       </p>
       {error ? <p>{error}</p> : null}
       {notes.length === 0 && !error ? <p>No strategy notes yet.</p> : null}
@@ -51,7 +47,7 @@ export default async function StrategyPage() {
           </strong>
           <p>{note.body}</p>
           <p style={{ color: "var(--text-muted)" }}>
-            {note.disclosure} · court_safe={String(note.court_safe)}
+            <span className="pr-status" data-pr-status="information">Private note</span>
           </p>
         </article>
       ))}

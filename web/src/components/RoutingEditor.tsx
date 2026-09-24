@@ -77,8 +77,8 @@ export function RoutingEditor({
     >
       <p className="section-eyebrow">Routing table</p>
       <p className="dim">
-        Change backends and models here when the framework changes. Saved to
-        the workspace overlay, not a code rewrite.
+        Set the framework, chat backend, model paths, and agent models used by this workspace.
+        Changes save to the workspace routing overlay.
       </p>
       <label>
         Framework label

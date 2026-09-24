@@ -81,12 +81,9 @@ test("keeps palette control in the shared token source", async () => {
   assert.match(css, /min-height:\s*var\(--pr-context-strip-min-height\)/);
 });
 
-test("renders explicit legal authority and release boundaries", async () => {
+test("renders workspace connectivity and confidentiality status", async () => {
   const shell = await text("src/components/TerminalShell.tsx");
 
-  assert.match(shell, /Source policy: LegalSourcePackage only/);
-  assert.match(shell, /Currency state: not verified here/);
-  assert.match(shell, /Release policy: owner review required/);
   assert.match(shell, /Confidential setting: local only/);
   assert.match(shell, /Confidential mode:/);
   assert.match(shell, /confidentialEnforcement/);

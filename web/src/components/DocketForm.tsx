@@ -65,7 +65,7 @@ export function DocketForm() {
         />
       </label>
       <label>
-        When
+        Date and time
         <input
           type="datetime-local"
           value={occursAt}
@@ -114,7 +114,7 @@ export function DocketForm() {
           checked={confirmed}
           onChange={(event) => setConfirmed(event.target.checked)}
         />{" "}
-        Clerk-confirmed
+        Confirmed by clerk
       </label>
       {error ? <p style={{ color: "var(--status-warn)" }}>{error}</p> : null}
       <button type="submit" disabled={busy || !title.trim() || !occursAt}>

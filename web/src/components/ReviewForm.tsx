@@ -18,7 +18,7 @@ export function ReviewForm({
   const [busy, setBusy] = useState(false);
 
   if (sections.length === 0) {
-    return <p>No draft sections to review. Write a draft first.</p>;
+    return <p>No draft sections are available. Write a draft first.</p>;
   }
 
   async function submit() {
@@ -57,7 +57,7 @@ export function ReviewForm({
       style={{ display: "grid", gap: 10, margin: "16px 0 32px" }}
     >
       <label>
-        Draft section
+        Draft section to review
         <select
           value={sectionId}
           onChange={(event) => setSectionId(event.target.value)}
@@ -83,7 +83,7 @@ export function ReviewForm({
         </select>
       </label>
       <label>
-        Rationale
+        Reason for this decision (required)
         <textarea
           value={rationale}
           onChange={(event) => setRationale(event.target.value)}
@@ -94,7 +94,7 @@ export function ReviewForm({
       </label>
       {error ? <p style={{ color: "var(--status-warn)" }}>{error}</p> : null}
       <button type="submit" disabled={busy || !rationale.trim()}>
-        {busy ? "Saving…" : "Record your review"}
+        {busy ? "Saving…" : "Save review decision"}
       </button>
     </form>
   );

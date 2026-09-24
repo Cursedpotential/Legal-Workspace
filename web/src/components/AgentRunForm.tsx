@@ -50,7 +50,7 @@ export function AgentRunForm() {
           value={intent}
           onChange={(event) => setIntent(event.target.value)}
           required
-          placeholder="research Vodvarka lookback — not file a motion"
+          placeholder="e.g. research Vodvarka lookback"
           style={{ display: "block", width: "100%", marginTop: 4 }}
         />
       </label>
@@ -66,7 +66,7 @@ export function AgentRunForm() {
       </label>
       {error ? <p style={{ color: "var(--status-warn)" }}>{error}</p> : null}
       <button type="submit" disabled={busy || !intent.trim()}>
-        {busy ? "Recording…" : "Record routed run (no model call)"}
+        {busy ? "Recording…" : "Record routed run"}
       </button>
     </form>
   );

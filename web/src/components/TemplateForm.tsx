@@ -43,7 +43,7 @@ export function TemplateForm({
       style={{ display: "grid", gap: 10, margin: "16px 0 32px" }}
     >
       <label>
-        Template
+        Choose a template
         <select
           value={templateId}
           onChange={(event) => setTemplateId(event.target.value)}
@@ -58,7 +58,7 @@ export function TemplateForm({
       </label>
       {error ? <p style={{ color: "var(--status-warn)" }}>{error}</p> : null}
       <button type="submit" disabled={busy || !templateId}>
-        {busy ? "Creating…" : "Create draft from template"}
+        {busy ? "Creating…" : "Create draft"}
       </button>
     </form>
   );

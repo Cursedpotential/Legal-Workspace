@@ -88,7 +88,6 @@ function ChatInner() {
 
   return (
     <>
-      <p className="section-eyebrow">Assistant</p>
       <h1>Ask the assistant</h1>
       <p className="surface-chip" title={navHelp(surface)}>
         Looking at: <strong>{navLabel(surface)}</strong>
@@ -102,10 +101,7 @@ function ChatInner() {
           Nothing unsaved on this screen. Only what is already stored will be attached.
         </p>
       )}
-      <p className="muted">
-        Workbench only — not a lawyer, not a filing. F1 from any page pins this beside what you
-        were looking at.
-      </p>
+      <p className="muted">Ask about the selected workspace context. F1 from any page opens this beside that context.</p>
       <ConfidentialFlag />
       {log.map((item, index) => (
         <article key={`${item.role}-${index}`}>
@@ -124,7 +120,7 @@ function ChatInner() {
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           rows={3}
-          placeholder={`Ask about ${navLabel(surface).toLowerCase()} — do not ask this to file`}
+          placeholder={`Ask about ${navLabel(surface).toLowerCase()}`}
         />
         <button type="submit" disabled={busy || !prompt.trim()}>
           {busy ? "Working…" : "Send"}

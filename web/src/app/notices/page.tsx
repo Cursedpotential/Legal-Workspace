@@ -16,11 +16,9 @@ export default async function InboundNoticesPage() {
 
   return (
     <>
-      <p className="section-eyebrow">Operations</p>
       <h1 className="legal">Inbound notices</h1>
       <p>
-        Inbound notices recorded by this workspace. Process opens the related
-        page. IMAP mail is not connected yet.
+        Review inbound notices recorded by this workspace. Process opens the related page; IMAP is not connected.
       </p>
       {error ? <p className="unsupported">{error}</p> : null}
       <EventList events={events} />

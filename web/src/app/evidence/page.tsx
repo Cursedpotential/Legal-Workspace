@@ -33,15 +33,11 @@ export default async function ExhibitsPage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-        Evidence list
-      </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
         Approved package items only
       </h1>
       <p>
-        This screen holds locators and owner annotations. No evidence bytes.
-        Bates numbers stay blank until you type one or assign the next stamp.
+        Review evidence linked to this case, add notes, and record where each item can be found.
       </p>
       {error ? <p>{error}</p> : null}
       <ExhibitForm

@@ -23,9 +23,8 @@ export default async function PlaybooksPage() {
 
   return (
     <>
-      <p className="section-eyebrow">Operations</p>
       <h1 className="legal">Playbooks</h1>
-      <p>Playbooks for recurring processes. Labels only. No hearing date is invented.</p>
+      <p>Run and review playbooks for recurring processes.</p>
       {error ? <p className="unsupported">{error}</p> : null}
       <PlaybookRun playbooks={playbooks} />
     </>

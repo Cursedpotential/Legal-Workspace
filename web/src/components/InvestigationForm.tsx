@@ -54,18 +54,18 @@ export function InvestigationForm() {
       style={{ display: "grid", gap: 10, margin: "16px 0 32px" }}
     >
       <label>
-        Kind
+        Request type
         <select
           value={kind}
           onChange={(event) => setKind(event.target.value)}
           style={{ display: "block", width: "100%", marginTop: 4 }}
         >
-          <option value="missing_proof">missing_proof</option>
-          <option value="contradiction">contradiction</option>
+          <option value="missing_proof">Missing proof</option>
+          <option value="contradiction">Contradiction</option>
         </select>
       </label>
       <label>
-        Proof needed
+        Proof needed (required)
         <textarea
           value={needed}
           onChange={(event) => setNeeded(event.target.value)}
@@ -75,7 +75,7 @@ export function InvestigationForm() {
         />
       </label>
       <label>
-        Why legal work needs it
+        Why it is needed (required)
         <textarea
           value={why}
           onChange={(event) => setWhy(event.target.value)}
@@ -85,7 +85,7 @@ export function InvestigationForm() {
         />
       </label>
       <label>
-        Linked issue / element
+        Linked issue or element
         <input
           value={linkedIssue}
           onChange={(event) => setLinkedIssue(event.target.value)}
@@ -103,7 +103,7 @@ export function InvestigationForm() {
       </label>
       {error ? <p style={{ color: "var(--status-warn)" }}>{error}</p> : null}
       <button type="submit" disabled={busy || !needed.trim() || !why.trim()}>
-        {busy ? "Saving…" : "Request missing proof"}
+        {busy ? "Saving…" : "Save investigation request"}
       </button>
     </form>
   );

@@ -37,7 +37,6 @@ export default async function FactorPage() {
 
   return (
     <>
-      <p className="section-eyebrow">What the judge must consider · MCL 722.23</p>
       <h1 className="legal">The 12 things the judge must weigh</h1>
       {error ? <p className="unsupported">{error}</p> : null}
       {factors.length > 0 ? <FactorNoteAdd factors={factors} /> : null}

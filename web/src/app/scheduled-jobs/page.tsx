@@ -27,9 +27,8 @@ export default async function ScheduledJobsPage() {
 
   return (
     <>
-      <p className="section-eyebrow">Operations</p>
       <h1 className="legal">Scheduled jobs</h1>
-      <p>Scheduled jobs. Enable, last-run, run now. n8n is for email and push only.</p>
+      <p>Review scheduled jobs and run recurring playbooks.</p>
       {error ? <p className="unsupported">{error}</p> : null}
       <table className="work-sheet">
         <thead>

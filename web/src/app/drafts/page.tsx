@@ -1,6 +1,7 @@
 // Byline amendment: Codex · GPT-5 · 2026-09-12 (Propria semantic token adoption)
 import { DraftEditor } from "@/components/DraftEditor";
-import { fetchDrafts } from "@/lib/api/client";
+import { TemplateForm } from "@/components/TemplateForm";
+import { fetchDrafts, legalApiBase } from "@/lib/api/client";
 
 export default async function DraftPage() {
   let drafts: Awaited<ReturnType<typeof fetchDrafts>> = [];
@@ -11,18 +12,30 @@ export default async function DraftPage() {
     error = exc instanceof Error ? exc.message : "legal-api unreachable";
   }
 
+  let templates: Array<{ template_id: string; title: string }> = [];
+  let templateError: string | null = null;
+  try {
+    const response = await fetch(`${legalApiBase()}/v1/templates`, { cache: "no-store" });
+    if (!response.ok) throw new Error("Templates are temporarily unavailable.");
+    templates = await response.json();
+  } catch {
+    templateError = "Templates are temporarily unavailable. Try reloading this page.";
+  }
+
   return (
     <>
-      <p className="section-eyebrow">Drafting</p>
       <h1 className="legal">Motion writer</h1>
       <p>
-        Write the motion here. Released sections fork a new draft instead of
-        rewriting history. UNSUPPORTED means the citation gate failed.
+        Start from an outline, then edit and save each draft section. Expand citation support to see which paragraphs need support.
       </p>
       {error ? <p>{error}</p> : null}
-      {drafts.length === 0 && !error ? (
-        <p>No draft sections yet. Import a package, link a factor citation, then POST /v1/drafts.</p>
-      ) : null}
+      <details open={drafts.length === 0} className="surface-card">
+        <summary>Start a draft from an outline</summary>
+        {templateError ? <p role="status">{templateError}</p> : templates.length ? (
+          <TemplateForm templates={templates} />
+        ) : <p>No templates are available yet.</p>}
+        <a href="/templates">Browse template outlines</a>
+      </details>
       {drafts.map((draft) => (
         <article
           key={draft.section_id}
@@ -30,7 +43,7 @@ export default async function DraftPage() {
         >
           <h2>{draft.heading}</h2>
           {draft.unsupported ? (
-            <p style={{ color: "var(--status-warn)" }}>UNSUPPORTED</p>
+            <span className="pr-status" data-pr-status="caution">Citation support needed</span>
           ) : null}
           <DraftEditor
             sectionId={draft.section_id}
@@ -41,6 +54,8 @@ export default async function DraftPage() {
             Factor ({draft.factor_letter}) · {draft.citation_count} citations
             {draft.support ? ` · unsupported paragraphs: ${draft.support.unsupported_count}` : ""}
           </p>
+          <details>
+            <summary>Citation support</summary>
           {draft.support
             ? draft.support.paragraphs.map((paragraph) => (
                 <p
@@ -53,7 +68,8 @@ export default async function DraftPage() {
                   [{paragraph.state}] {paragraph.text}
                 </p>
               ))
-            : null}
+            : <p>No support assessment is available yet.</p>}
+          </details>
         </article>
       ))}
     </>

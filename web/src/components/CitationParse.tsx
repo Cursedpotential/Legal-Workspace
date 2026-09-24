@@ -103,17 +103,15 @@ export function CitationParse() {
       {error ? <p className="unsupported">{error}</p> : null}
       {tab === "validate" ? (
         <p className="muted">
-          Format check means the parser recognized a reporter and page. It is not
-          a holding check.
+          Checks whether the parser recognizes the reporter, volume, and page.
         </p>
       ) : null}
       {tab === "normalize" ? (
-        <p className="muted">Cleaned-up citation text only.</p>
+        <p className="muted">Returns normalized citation text.</p>
       ) : null}
       {tab === "verify" ? (
         <p className="muted">
-          Snapshot check records a hash + date so you can spot tampering later. This is not
-          a check of whether the case is still valid law.
+          Records a snapshot hash and date for later comparison.
         </p>
       ) : null}
       {rows.map((row) => (
@@ -125,7 +123,8 @@ export function CitationParse() {
             {row.court ? ` · ${row.court}` : ""}
           </p>
           <p className="muted">
-            recognized={String(row.validated)} · valid-law-check={String(row.is_citator_verified)}
+            Format {row.validated ? "recognized" : "needs review"} · Case-law validity{" "}
+            {row.is_citator_verified ? "checked" : "not checked"}
           </p>
         </article>
       ))}

@@ -231,8 +231,7 @@ export function FileTools() {
           {row.ocr ? (
             <>
               <p style={{ color: "var(--text-muted)", margin: "6px 0" }}>
-                {row.ocr.word_count} words · mean confidence {row.ocr.mean_confidence} · {row.ocr.engine} · machine-read
-                text, not a native export
+                {row.ocr.word_count} words · mean confidence {row.ocr.mean_confidence} · {row.ocr.engine} · OCR text
               </p>
               <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{row.ocr.text || "(no text found)"}</pre>
               <button type="button" onClick={() => void navigator.clipboard.writeText(row.ocr?.text ?? "")}>

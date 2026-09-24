@@ -21,7 +21,6 @@ export default async function TodoPage() {
 
   return (
     <>
-      <p className="section-eyebrow">Your tasks</p>
       <h1 className="legal">Your tasks</h1>
       {error ? <p className="unsupported">{error}</p> : null}
       <WorkSheet

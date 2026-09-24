@@ -27,14 +27,11 @@ export default async function MissingProofPage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-        Missing evidence
-      </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
         Missing evidence and investigation requests
       </h1>
       <p>
-        Identify missing support and request follow-up from the evidence workspace.
+        Record missing support and create follow-up investigation requests.
       </p>
       {error ? <p>{error}</p> : null}
       <InvestigationForm />
@@ -55,7 +52,7 @@ export default async function MissingProofPage() {
           </p>
           {item.contradiction ? <p>Contradiction: {item.contradiction}</p> : null}
           <p style={{ color: "var(--text-muted)" }}>
-            {item.event_type} · court_safe={String(item.court_safe)}
+            Event type: <span className="pr-status" data-pr-status="information">Investigation request</span>
           </p>
         </article>
       ))}

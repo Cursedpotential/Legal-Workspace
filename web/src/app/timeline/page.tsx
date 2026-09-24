@@ -32,15 +32,11 @@ export default async function TimelinePage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-        Timeline
-      </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
-        Vertical case timeline
+        Case timeline
       </h1>
       <p>
-        Court events you enter. Not the Evidence Platform factual timeline.
-        Empty until a real date is recorded.
+        Review court events entered for this matter, grouped into past and upcoming dates.
       </p>
       {error ? <p>{error}</p> : null}
       <DocketForm />

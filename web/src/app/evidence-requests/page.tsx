@@ -25,14 +25,11 @@ export default async function EvidenceRequestsPage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-        Discovery
-      </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
         Discovery requests
       </h1>
       <p>
-        Draft requests for documents, admissions, answers, and subpoenas.
+        Create and review requests for documents, admissions, answers, and subpoenas.
       </p>
       {error ? <p>{error}</p> : null}
       <EvidenceRequestForm />

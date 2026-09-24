@@ -13,7 +13,14 @@ export function ProviderTermsGrid({
   return (
     <section className="surface-card">
       <h2>Provider privacy settings</h2>
-      <ConfidentialFlag />
+      <p className="muted">Compare recorded data-retention and training settings for AI providers, and see which are eligible when Confidential Mode is on.</p>
+      <div className="legal-context-states" aria-label="Provider settings status">
+        <ConfidentialFlag />
+        {grid ? <>
+          <span className="pr-status" data-pr-status="information">Saved provider terms</span>
+          <span className="pr-status" data-pr-status="information">PACER {grid.pacer ? "on" : "off"}</span>
+        </> : null}
+      </div>
       {!grid && !error ? <p className="muted">Provider settings unavailable.</p> : null}
       {error ? <p>{error}</p> : null}
       {grid ? (
@@ -22,9 +29,9 @@ export function ProviderTermsGrid({
             <tr>
               <th>Provider</th>
               <th>Role</th>
-              <th>Train</th>
-              <th>Retain</th>
-              <th>Confidential-eligible</th>
+              <th>Uses data for training</th>
+              <th>Data retention</th>
+              <th>Confidential mode</th>
               <th>Use</th>
             </tr>
           </thead>
@@ -36,10 +43,12 @@ export function ProviderTermsGrid({
                   <div className="muted">{row.id}</div>
                 </td>
                 <td>{row.role}</td>
-                <td>{row.train ? "assume yes" : "no"}</td>
-                <td>{row.retain}</td>
+                <td>{row.train ? "Assumed yes" : "No"}</td>
+                <td>{row.retain.replaceAll("_", " ")}</td>
                 <td className={row.confidential_eligible ? "eligible" : "blocked"}>
-                  {row.confidential_eligible ? "yes" : "no"}
+                  <span className="pr-status" data-pr-status={row.confidential_eligible ? "information" : "caution"}>
+                    {row.confidential_eligible ? "Eligible" : "Blocked"}
+                  </span>
                 </td>
                 <td>{row.use}</td>
               </tr>

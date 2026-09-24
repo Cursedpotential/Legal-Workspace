@@ -46,17 +46,21 @@ export function DraftEditor({
       }}
       style={{ display: "grid", gap: 8, marginTop: 12 }}
     >
+      <label>Section heading
       <input
         value={title}
         onChange={(event) => setTitle(event.target.value)}
         style={{ width: "100%" }}
       />
+      </label>
+      <label>Draft text
       <textarea
         value={text}
         onChange={(event) => setText(event.target.value)}
         rows={10}
         style={{ width: "100%", fontFamily: "Georgia, serif" }}
       />
+      </label>
       {error ? <p style={{ color: "var(--status-warn)" }}>{error}</p> : null}
       <button type="submit" disabled={busy || !title.trim()}>
         {busy ? "Saving…" : "Save draft"}

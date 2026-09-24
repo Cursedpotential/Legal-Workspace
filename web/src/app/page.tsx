@@ -49,7 +49,7 @@ export default async function MatterHomePage() {
             Family-court office: {matter.foc_confirmed ? "confirmed" : "not confirmed"}
           </p>
           <p>
-            <a className="quick-action" href="/assistant" title="Ask the assistant. This is not legal advice and is not filed with the court.">
+            <a className="quick-action" href="/assistant" title="Ask the assistant about the current workspace context.">
               Ask the assistant
             </a>
           </p>

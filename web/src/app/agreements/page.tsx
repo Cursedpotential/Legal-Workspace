@@ -14,10 +14,9 @@ export default async function ContractWorkbenchPage() {
 
   return (
     <>
-      <p className="section-eyebrow">Documents and drafting</p>
       <h1 className="legal">Document review</h1>
       <p>
-        Review and compare court orders, offers, proposals, and drafts.
+        Read saved draft sections side by side and make review notes.
       </p>
       {error ? <p className="unsupported">{error}</p> : null}
       <ContractWorkbench

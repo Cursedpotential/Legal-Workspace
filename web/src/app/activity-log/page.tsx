@@ -16,9 +16,8 @@ export default async function AuditLogPage() {
 
   return (
     <>
-      <p className="section-eyebrow">Operations</p>
       <h1 className="legal">Activity log</h1>
-      <p>What this workspace recorded.</p>
+      <p>Review recorded workspace events and their current status.</p>
       {error ? <p className="unsupported">{error}</p> : null}
       <EventList events={events} />
     </>

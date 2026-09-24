@@ -5,11 +5,9 @@ import { CitationParse } from "@/components/CitationParse";
 export default function CitationCheckPage() {
   return (
     <>
-      <p className="section-eyebrow">Research</p>
       <h1 className="legal">Citation check</h1>
       <p>
-        Validate and normalize citation structure. This does not Shepardize.
-        CourtListener is not a citator.
+        Check citation format, normalize the text, or compare a stored snapshot.
       </p>
       <CitationParse />
     </>

@@ -17,13 +17,21 @@ export function readConfidential(): boolean {
 }
 
 export function ConfidentialFlag() {
-  const [on, setOn] = useState(false);
+  const [on, setOn] = useState<boolean | null>(null);
   useEffect(() => {
-    setOn(readConfidential());
+    const update = () => setOn(readConfidential());
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-confidential"] });
+    window.addEventListener("storage", update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("storage", update);
+    };
   }, []);
   return (
-    <p className="dim">
-      Confidential Mode: {on ? "on" : "off"}
-    </p>
+    <span className="pr-status" data-pr-status="information">
+      {on === null ? "Checking privacy setting" : `Confidential mode ${on ? "on" : "off"}`}
+    </span>
   );
 }

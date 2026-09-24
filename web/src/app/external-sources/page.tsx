@@ -23,12 +23,8 @@ export default async function ExternalSourcesPage() {
 
   return (
     <>
-      <p className="section-eyebrow">Operations</p>
       <h1 className="legal">External sources</h1>
-      <p className="unsupported">
-        PACER is off. PACER charges per page. Do not turn it on from this
-        screen.
-      </p>
+      <p className="muted">Review configured external providers and their access terms.</p>
       {error ? <p className="unsupported">{error}</p> : null}
       {sources.map((source) => (
         <article key={source.id} className="surface-card">

@@ -62,7 +62,7 @@ export function EvidenceRequestForm() {
         </select>
       </label>
       <label>
-        Request text
+        Request text (required)
         <textarea
           value={text}
           onChange={(event) => setText(event.target.value)}
@@ -72,7 +72,7 @@ export function EvidenceRequestForm() {
         />
       </label>
       <label>
-        Purpose
+        Purpose (required)
         <input
           value={purpose}
           onChange={(event) => setPurpose(event.target.value)}
@@ -81,7 +81,7 @@ export function EvidenceRequestForm() {
         />
       </label>
       <label>
-        Linked issue / element
+        Linked issue or element (required)
         <input
           value={linkedIssue}
           onChange={(event) => setLinkedIssue(event.target.value)}
@@ -91,7 +91,7 @@ export function EvidenceRequestForm() {
       </label>
       {error ? <p style={{ color: "var(--status-warn)" }}>{error}</p> : null}
       <button type="submit" disabled={busy || !text.trim()}>
-        {busy ? "Saving…" : "Add discovery request"}
+        {busy ? "Saving…" : "Save discovery request"}
       </button>
     </form>
   );

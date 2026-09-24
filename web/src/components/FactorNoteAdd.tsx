@@ -54,7 +54,7 @@ export function FactorNoteAdd({
       </select>
       <select
         value={side}
-        aria-label="Where this note goes"
+        aria-label="Note category"
         onChange={(event) => setSide(event.target.value)}
       >
         <option value="petitioner">Petitioner</option>
@@ -64,8 +64,8 @@ export function FactorNoteAdd({
       </select>
       <input
         value={text}
-        aria-label="Note"
-        placeholder="Type the note. Enter to add."
+        aria-label="Factor note"
+        placeholder="Type a note and press Enter to save"
         onChange={(event) => setText(event.target.value)}
         onKeyDown={(event) => {
           if (event.key === "Enter") {

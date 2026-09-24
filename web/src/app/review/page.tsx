@@ -28,15 +28,11 @@ export default async function ReviewPage() {
 
   return (
     <>
-      <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-        Your review
-      </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
-        Human verdict before any release
+        Review draft sections
       </h1>
       <p>
-        Agents cannot approve. An approve is bound to the section hash. Edit the
-        draft and the prior approval no longer counts.
+        Choose a draft section, record your decision, and explain any requested changes. Editing an approved section requires a new review.
       </p>
       {error ? <p>{error}</p> : null}
       <ReviewForm sections={drafts} />

@@ -61,8 +61,7 @@ export default async function CalendarPage({
       <p className="muted">Court dates</p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>{label}</h1>
       <p>
-        Local only. No Google. No PACER. Enter a clerk-set date when you have
-        one.
+        Enter and review the court dates recorded for this matter.
       </p>
       <p>
         <a href={`/calendar?year=${prev.year}&month=${prev.month}`}>Previous</a>

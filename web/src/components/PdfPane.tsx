@@ -21,9 +21,7 @@ export function PdfPane() {
       <p className="section-eyebrow">Contracts</p>
       <h1>Document viewer</h1>
       <p className="dim">
-        Open a PDF you produced. Ask / F1 and Chrome DevTools can see this page.
-        This is not from the evidence store. In-browser editing and conversion are
-        not available yet.
+        Choose a PDF to view it in this workspace.
       </p>
       <label>
         Choose a PDF
@@ -47,7 +45,7 @@ export function PdfPane() {
           src={url}
         />
       ) : (
-        <p className="muted">No file open. Pick an owner-produced PDF.</p>
+        <p className="muted">No file open. Choose a PDF to begin.</p>
       )}
     </>
   );

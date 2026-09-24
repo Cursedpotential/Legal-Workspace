@@ -10,13 +10,10 @@ export default function FileToolsPage() {
         Metadata, original timestamps, screenshot text, PDF conversion.
       </h1>
       <p>
-        Pick one file or a whole series. Reading never changes a file and uploads are not kept. To order
-        screenshots of one conversation, select them all (add any Google Takeout <code>.json</code> sidecars
-        beside them) and use <em>Put images in time order</em>.
+        Select one file or a series to inspect metadata, recover timestamps, extract screenshot text, or convert PDFs. To order screenshots of one conversation, select them with any Google Takeout <code>.json</code> sidecars and use <em>Put images in time order</em>.
       </p>
       <p style={{ color: "var(--text-muted)" }}>
-        court_safe=false · A resolved time is a lead with a named source, not a finding. Conversions and scrubbed
-        copies are work product, never evidence originals.
+        Resolved times retain their named source. Conversions and scrubbed copies are derived work product.
       </p>
       <FileTools />
     </>

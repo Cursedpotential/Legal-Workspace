@@ -15,9 +15,8 @@ export default async function AnalysisQueuePage() {
 
   return (
     <>
-      <p className="section-eyebrow">Operations</p>
       <h1 className="legal">Analysis queue</h1>
-      <p>Queued analysis jobs. Enable, last-run, and run-now live on Scheduled jobs.</p>
+      <p>Review queued jobs and their next run times. Controls are on Scheduled jobs.</p>
       {error ? <p className="unsupported">{error}</p> : null}
       {jobs.length === 0 && !error ? <p className="muted">No jobs queued.</p> : null}
       <table className="work-sheet">

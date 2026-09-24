@@ -47,7 +47,7 @@ export function SourceSearch() {
       style={{ display: "grid", gap: 8, margin: "16px 0 24px" }}
     >
       <label>
-        CourtListener identity search (not a citator)
+        CourtListener case search
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
