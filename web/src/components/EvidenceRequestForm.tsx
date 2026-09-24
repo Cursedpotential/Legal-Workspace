@@ -49,16 +49,16 @@ export function EvidenceRequestForm() {
       style={{ display: "grid", gap: 10, margin: "16px 0 32px" }}
     >
       <label>
-        Kind
+        Request type
         <select
           value={kind}
           onChange={(event) => setKind(event.target.value)}
           style={{ display: "block", width: "100%", marginTop: 4 }}
         >
-          <option value="rfp">rfp</option>
-          <option value="interrogatory">interrogatory</option>
-          <option value="rfa">rfa</option>
-          <option value="subpoena">subpoena</option>
+          <option value="rfp">Request for production (RFP)</option>
+          <option value="interrogatory">Interrogatory</option>
+          <option value="rfa">Request for admission (RFA)</option>
+          <option value="subpoena">Subpoena</option>
         </select>
       </label>
       <label>

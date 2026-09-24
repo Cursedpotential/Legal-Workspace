@@ -26,14 +26,13 @@ export default async function EvidenceRequestsPage() {
   return (
     <>
       <p style={{ letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-        Evidence requests
+        Discovery
       </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
-        Every request names its missing proof
+        Discovery requests
       </h1>
       <p>
-        Not served until you record a real date. Agents cannot serve, email, or
-        issue a subpoena.
+        Draft requests for documents, admissions, answers, and subpoenas.
       </p>
       {error ? <p>{error}</p> : null}
       <EvidenceRequestForm />

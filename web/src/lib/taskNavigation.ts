@@ -21,20 +21,20 @@ const GROUP_PATHS: Record<TaskNavigationGroup, readonly string[]> = {
   "Case overview": ["/"],
   "Reference library": ["/case-search", "/laws", "/external-sources"],
   "Documents and drafting": [
-    "/agreements",
     "/documents",
     "/file-tools",
     "/confidentiality-check",
     "/drafts",
+    "/agreements",
     "/review",
     "/final-copy",
     "/filing-checklist",
   ],
   Evidence: [
-    "/evidence-requests",
-    "/evidence",
     "/evidence-catalog",
+    "/evidence",
     "/missing-evidence",
+    "/evidence-requests",
   ],
   "Case strategy": ["/private-notes", "/challenge-draft"],
   "Legal research and analysis": [
@@ -75,6 +75,9 @@ export function groupSurfacesByTaskNavigation(
   const groups = new Map<TaskNavigationGroup, Surface[]>();
   for (const group of TASK_NAVIGATION_GROUPS) groups.set(group, []);
   for (const item of surfaces) groups.get(taskNavigationGroupForSurface(item))?.push(item);
+  for (const label of ["Documents and drafting", "Evidence"] as const) {
+    groups.get(label)?.sort((a, b) => GROUP_PATHS[label].indexOf(a.path) - GROUP_PATHS[label].indexOf(b.path));
+  }
   return TASK_NAVIGATION_GROUPS
     .map((group) => [group, groups.get(group) ?? []] as [TaskNavigationGroup, Surface[]])
     .filter(([, items]) => items.length > 0);

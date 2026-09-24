@@ -4,7 +4,7 @@ import { fetchMatter, legalApiBase } from "@/lib/api/client";
 
 const HOME_GROUPS: Array<{ title: string; paths: string[] }> = [
   { title: "Research", paths: ["/case-search", "/laws", "/citation-check"] },
-  { title: "Contracts", paths: ["/agreements", "/documents"] },
+  { title: "Documents and drafting", paths: ["/documents", "/drafts", "/agreements"] },
   { title: "Privilege", paths: ["/confidentiality-check"] },
   { title: "Operations", paths: ["/analysis-queue", "/playbooks", "/scheduled-jobs", "/notices", "/activity-log", "/external-sources"] },
 ];

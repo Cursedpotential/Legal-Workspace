@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 
 // Byline: Grok · grok-4.6 · 2026-08-18
-// Agreement review: analyze / compare / negotiate. Parenting-plan terms, not NDAs.
+// Review and compare working documents.
 
 type Draft = {
   section_id: string;
@@ -29,7 +29,7 @@ export function ContractWorkbench({ drafts }: { drafts: Draft[] }) {
   );
 
   if (!drafts.length) {
-    return <p className="muted">No agreement drafts yet. Open Motion writer or Document viewer first.</p>;
+    return <p className="muted">No drafts available to review yet. Create a draft in Motion writer.</p>;
   }
 
   return (
@@ -37,9 +37,9 @@ export function ContractWorkbench({ drafts }: { drafts: Draft[] }) {
       <div className="tab-row" role="tablist">
         {(
           [
-            ["analyze", "Analyze"],
+            ["analyze", "Read"],
             ["compare", "Compare"],
-            ["negotiate", "Negotiate"],
+            ["negotiate", "Review notes"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -98,14 +98,13 @@ export function ContractWorkbench({ drafts }: { drafts: Draft[] }) {
         <article className="surface-card">
           <h2>{left.heading}</h2>
           <p className="muted">
-            Notes for settlement language. Holiday schedule, decision-making,
-            relocation. Not a filed paper.
+            Notes on wording, proposed changes, or questions about this document.
           </p>
           <textarea
             rows={6}
             value={note}
             onChange={(event) => setNote(event.target.value)}
-            placeholder="What you will and will not accept in this term"
+            placeholder="Add your review notes"
           />
           <pre className="draft-pre">{left.body || "(empty)"}</pre>
         </article>

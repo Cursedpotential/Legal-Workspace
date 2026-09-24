@@ -31,11 +31,10 @@ export default async function MissingProofPage() {
         Missing evidence
       </p>
       <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
-        Missing proof goes back to Agno
+        Missing evidence and investigation requests
       </h1>
       <p>
-        This is not a second evidence store and not a docket. Name the gap.
-        Do not invent a hearing date or an established fact. court_safe=false.
+        Identify missing support and request follow-up from the evidence workspace.
       </p>
       {error ? <p>{error}</p> : null}
       <InvestigationForm />
