@@ -17,8 +17,7 @@ export default async function ContractWorkbenchPage() {
       <p className="section-eyebrow">Contracts</p>
       <h1 className="legal">Agreement review</h1>
       <p>
-        Analyze, compare, and negotiate agreement language. Parenting-plan and
-        order terms. Not a commercial NDA library.
+        Review and compare agreement language, parenting plans, and order terms.
       </p>
       {error ? <p className="unsupported">{error}</p> : null}
       <ContractWorkbench
