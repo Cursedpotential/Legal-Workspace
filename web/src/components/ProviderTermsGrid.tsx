@@ -12,15 +12,9 @@ export function ProviderTermsGrid({
 }) {
   return (
     <section className="surface-card">
-      <p className="section-eyebrow">Provider terms grid</p>
-      <h2>Cited snapshot. Not a privilege legal conclusion.</h2>
+      <h2>Provider privacy settings</h2>
       <ConfidentialFlag />
-      <p className="dim">
-        PACER={String(grid?.pacer ?? false)} · local_ollama_as_trust_posture=
-        {String(grid?.local_ollama_as_trust_posture ?? false)} · court_safe=
-        {String(grid?.court_safe ?? false)}
-      </p>
-      <p className="muted">{grid?.disclaimer ?? "Grid unavailable."}</p>
+      {!grid && !error ? <p className="muted">Provider settings unavailable.</p> : null}
       {error ? <p>{error}</p> : null}
       {grid ? (
         <table className="provider-grid">

@@ -83,26 +83,22 @@ export function PrivilegeScanForm({
           value={text}
           onChange={(event) => setText(event.target.value)}
           rows={6}
-          placeholder="Keyword first-pass only. Not a privilege determination."
+          placeholder="Paste the text to check for sensitive information."
           style={{ display: "block", width: "100%", marginTop: 4 }}
         />
       </label>
       {error ? <p style={{ color: "var(--status-warn)" }}>{error}</p> : null}
       <button type="submit" disabled={busy || (!text.trim() && !sectionId)}>
-        {busy ? "Scanning…" : "Run keyword first-pass"}
+        {busy ? "Scanning…" : "Check text"}
       </button>
       {scan ? (
         <article style={{ borderTop: "1px solid var(--border)", padding: "16px 0" }}>
           <strong>
             {scan.method} · {scan.source}
           </strong>
-          <p style={{ color: "var(--text-muted)" }}>
-            court_safe={String(scan.court_safe)} · legal_conclusion=
-            {String(scan.legal_conclusion)}
-          </p>
-          <p>{scan.disclaimer}</p>
+          <p className="muted">Keyword scan · Review matches</p>
           {scan.hypothesized_markers.length === 0 ? (
-            <p>No hypothesized markers. Absence is not a clearance.</p>
+            <p>No keyword matches found.</p>
           ) : (
             <ul>
               {scan.hypothesized_markers.map((marker, index) => (

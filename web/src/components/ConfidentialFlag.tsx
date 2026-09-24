@@ -23,7 +23,7 @@ export function ConfidentialFlag() {
   }, []);
   return (
     <p className="dim">
-      Confidential Mode: {on ? "on" : "off"} · not a privilege legal conclusion
+      Confidential Mode: {on ? "on" : "off"}
     </p>
   );
 }

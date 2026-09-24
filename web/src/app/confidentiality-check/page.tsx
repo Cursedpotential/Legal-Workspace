@@ -22,23 +22,9 @@ export default async function PrivilegePage() {
 
   return (
     <>
-      <p className="section-eyebrow">Contracts</p>
-      <p className="muted">Confidentiality check</p>
-      <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 500 }}>
-        Hypothesized markers only. Not a privilege legal conclusion.
-      </h1>
-      <p>
-        Keyword scan. No LLM. Hits are hypothesized markers for
-        attorney-client, work product, strategy, medical, and
-        child-identifying language. A court decides privilege. AI
-        conversations are not attorney-client privileged (
-        <em>United States v. Heppner</em>, S.D.N.Y. 2026; ABA Model Rule
-        1.6).
-      </p>
-      <p style={{ color: "var(--text-muted)" }}>
-        court_safe=false · Keyword scan does not route. Confidential Mode
-        uses the cited provider grid below.
-      </p>
+      <p className="section-eyebrow">Documents and drafting</p>
+      <h1 className="legal">Confidentiality check</h1>
+      <p>Scan for sensitive information in a draft or pasted text.</p>
       {error ? <p>{error}</p> : null}
       <PrivilegeScanForm drafts={drafts} />
       <ProviderTermsGrid grid={grid} error={gridError} />
